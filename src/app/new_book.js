@@ -4,7 +4,21 @@ import { render } from 'react-dom';
 import Menu from './Menu';
 import Footer from './Footer';
 
+import Chips, { Chip } from 'react-chips';
+
 class NewBook extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+          chips: [],
+          suggestions: ["Ficción" , "Humor", "Amor", "Muerte", "Guerra", "Novela histórica", "Odio", "Aventuras"] 
+        }
+    }
+
+    newBook() {
+        M.toast({html: 'Libro creado'});    
+    }
+
     render() {
         return (
             <div>
@@ -14,7 +28,7 @@ class NewBook extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <form action="book.html" method="post">
+                        <form onSubmit={this.newBook}>
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label for="isbn">ISBN</label>
@@ -80,10 +94,22 @@ class NewBook extends Component {
                             </div>
 
                             <div className="row">
-                                <div className="input-field col s12">
+                                <div className="col s12">
                                     <label for="genres">Géneros</label> 
-                                    <input type="text" id="genres" name="genres" defaultValue=""/> 
-                                    <span class="helper-text" data-error="wrong" data-success="right">Los géneros van separados por comas</span>
+                                    <Chips value={this.state.chips} placeholder="Añada un género literario" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                &nbsp; &nbsp; <label for="image">Imagen</label> 
+                                <div className="file-field input-field col s12">
+                                    <div className="btn">
+                                        <span>Archivo</span>
+                                        <input type="file" accept="image/*"/>
+                                    </div>
+                                    <div class="file-path-wrapper">
+                                        <input className="file-path" id="image" name="image" defaultValue="" type="text" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -92,6 +118,10 @@ class NewBook extends Component {
                             </button>
                         </form>
                     </div>
+                </div>
+
+                <div className="center-align" style={{marginBottom: '4%'}}>
+                    <a className="waves-effect waves-light btn" href="add_genre.html">Añadir nuevo género</a>
                 </div>
                 
                 <Footer/>

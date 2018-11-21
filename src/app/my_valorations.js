@@ -4,7 +4,9 @@ import { render } from 'react-dom';
 import Menu from './Menu';
 import Footer from './Footer';
 
-class Inicio extends Component {
+import StarRatings from 'react-star-ratings';
+
+class MyValorations extends Component {
     render() {
         return (
             <div>
@@ -21,17 +23,17 @@ class Inicio extends Component {
                 hoy no hay clase porque tengo un resacón...</p>
                         </div>
 
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> 3 (Aunque molarían estrellas)</p> 
+                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p> 
 
-                        <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> 3</p>
+                        <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> 3 &nbsp; &nbsp; <i className="material-icons">thumb_down</i> 0</p>
                     </div>
                 </div>
 
                 <div className="row">
                     <ul class="pagination center-align">
-                        <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
-                        <li class="waves-effect"><a href="#!">1</a></li>
-                        <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+                        <li class="disabled"><a onMouseOver={() => M.toast({html: 'Página Anterior'})}><i class="material-icons">chevron_left</i></a></li>
+                        <li class="waves-effect"><a>1</a></li>
+                        <li class="waves-effect"><a onMouseOver={() => M.toast({html: 'Página Siguiente'})}><i class="material-icons">chevron_right</i></a></li>
                     </ul>
                 </div>
 
@@ -41,4 +43,4 @@ class Inicio extends Component {
     }
 }
 
-render(<Inicio/>, document.getElementById('base'));
+render(<MyValorations/>, document.getElementById('base'));

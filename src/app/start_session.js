@@ -5,6 +5,10 @@ import Menu from './Menu';
 import Footer from './Footer';
 
 class NewSession extends Component {
+    startSession() {
+
+    }
+    
     render() {
         return (
             <div>
@@ -14,7 +18,7 @@ class NewSession extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <form action="index.html" method="post">
+                        <form onSubmit={this.startSession}>
                         <div className="row">
                                 <div className="input-field col s12">
                                     <label for="username">Nombre de usuario</label>

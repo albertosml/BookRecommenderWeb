@@ -4,7 +4,26 @@ import { render } from 'react-dom';
 import Menu from './Menu';
 import Footer from './Footer';
 
+import Chips, { Chip } from 'react-chips';
+
 class Perfil extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+          chips: ["Ficción" , "Humor"],
+          suggestions: ["Ficción" , "Humor", "Amor", "Muerte", "Guerra", "Novela histórica", "Odio", "Aventuras"] 
+        }
+    }
+
+    unsubscribeUser() {
+        M.toast({html: 'Usuario dado de baja'});
+        {/* Con Express doy la página*/}
+    }
+
+    editUser() {
+        M.toast({html: 'Usuario editado'});    
+    }
+
     render() {
         return (
             <div>
@@ -14,7 +33,7 @@ class Perfil extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <form action="profile.html" method="post">
+                        <form onSubmit={this.editUser}>
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label for="name">Nombre</label>
@@ -44,10 +63,9 @@ class Perfil extends Component {
                             </div>
 
                             <div className="row">
-                                <div className="input-field col s12">
+                                <div className="col s12">
                                     <label for="genres">Géneros Favoritos</label> 
-                                    <input type="text" id="genres" name="genres" defaultValue="Ficción, Aventuras" /> 
-                                    <span class="helper-text" data-error="wrong" data-success="right">Los géneros van separados por comas</span>
+                                    <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
                                 </div>
                             </div>
 
@@ -59,9 +77,12 @@ class Perfil extends Component {
                 </div>
 
                 <div className="center-align" style={{marginBottom: '4%'}}>
-                    <button type="button" onClick="darDeBaja()" className="waves-effect waves-light btn">Darse de baja</button> 
+                    <button type="button" onClick={this.unsubscribeUser} className="waves-effect waves-light btn">Darse de baja</button> 
                 </div>
-        
+
+                <div className="center-align" style={{marginBottom: '4%'}}>
+                    <a className="waves-effect waves-light btn" href="add_genre.html">Añadir nuevo género</a>
+                </div>
                 
                 <Footer/>
             </div>

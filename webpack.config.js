@@ -9,7 +9,12 @@ module.exports = {
         iniciar_sesion: './src/app/start_session.js',
         nuevo_libro: './src/app/new_book.js',
         modificar_libro: './src/app/edit_book.js',
-        mis_valoraciones: './src/app/my_valorations.js'
+        mis_valoraciones: './src/app/my_valorations.js',
+        mis_libros_pendientes: './src/app/my_pending_books.js',
+        mis_libros_leidos: './src/app/my_readed_books.js',
+        mis_libros_recomendados: './src/app/my_recommended_books.js',
+        detalles_libro: './src/app/book_details.js',
+        anadir_genero: './src/app/add_genre.js'
     },
     output: {
         path: __dirname + '/src/public',
