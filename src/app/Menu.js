@@ -8,7 +8,7 @@ export default class Menu extends Component {
     render() {
         return (
             <div>
-                <nav className="green darken-2" role="navigation">
+                <nav className="green" role="navigation">
                     <div className="nav-wrapper">
                         <a href="index.html" >BookRecommender</a>
                         <a href="#" data-target="slide-out" className="sidenav-trigger show-on-large"><i className="material-icons">menu</i></a>

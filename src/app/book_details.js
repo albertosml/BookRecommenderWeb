@@ -49,16 +49,16 @@ class BookDetails extends Component {
             <div>
                 <Menu/>
 
-                <div className="row" style={{marginTop:'2%'}}>
+                <div id="normal" className="row" style={{marginTop:'2%'}}>
                     <div className="col s4 offset-s2">
                         <img style={{width:'100px', height:'150px'}} src="images/la_mare_balena.JPEG" />    
                     </div>
 
                     <div className="col s6">
                         <h3>
-                            La Mare Balena 
+                            La Mare Balena
                             &nbsp;
-                            <a href="book_edit.html"><i onMouseOver={() => M.toast({html: 'Modificar Libro'})} className="material-icons">book</i></a> 
+                            <a href="book_edit.html" className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h3>
                         <div className="row">
                             <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
@@ -66,6 +66,26 @@ class BookDetails extends Component {
                             <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: 98145566156 \n - Autor: Victor Català \n - Número de páginas: 62 \n - Fecha de publicación: 09/08/2018 \n - URL: https://www.amazon.com/Mare-Balena-Catalan-Víctor-Català/dp/1500780170/ref=sr_1_3?ie=UTF8&qid=1539369463&sr=8-3&keywords=La+Mare-Balena \n - Editorial: CreateSpace Independent Publishing Platform \n - Estudio: CreateSpace Independent Publishing Platform \n - Idioma: Catalán \n - Géneros: Historias Cortas, Humor")} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
                     </div>
+                </div>
+
+                <div id="responsive" className="row" style={{marginTop:'2%'}}>
+                    <div className="row">
+                        <h4 className="center-align">
+                            La Mare Balena
+                            &nbsp;
+                            <a href="book_edit.html" className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                        </h4>
+                    </div>
+                        <div className="row center-align">
+                            <img style={{width:'100px', height:'150px', margin: 'auto'}} src="images/la_mare_balena.JPEG" />
+                        </div>    
+
+                        <div className="row center-align">
+                            <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
+                        </div>
+                        <div className="row center-align">
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: 98145566156 \n - Autor: Victor Català \n - Número de páginas: 62 \n - Fecha de publicación: 09/08/2018 \n - URL: https://www.amazon.com/Mare-Balena-Catalan-Víctor-Català/dp/1500780170/ref=sr_1_3?ie=UTF8&qid=1539369463&sr=8-3&keywords=La+Mare-Balena \n - Editorial: CreateSpace Independent Publishing Platform \n - Estudio: CreateSpace Independent Publishing Platform \n - Idioma: Catalán \n - Géneros: Historias Cortas, Humor")} type="submit" id="buttonDetalles">Datos del libro</button>
+                        </div>
                 </div>
 
                 <div className="row">
@@ -98,6 +118,14 @@ class BookDetails extends Component {
                         hoy no hay clase porque tengo un resacón...</p>
                                 </div>
 
+                                <div className="row">
+                                    <ul class="pagination center-align">
+                                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
+                                        <li class="waves-effect"><a>1</a></li>
+                                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
+                                    </ul>
+                                </div>
+
                                 <div className="col s10 offset-s1 card light-green lighten-3">
                                     <p className="center"><strong>Comentario</strong></p>
                                     <form onSubmit={this.addComment}>
@@ -118,9 +146,9 @@ class BookDetails extends Component {
 
                         <div className="row">
                             <ul class="pagination center-align">
-                                <li class="disabled"><a onMouseOver={() => M.toast({html: 'Página Anterior'})}><i class="material-icons">chevron_left</i></a></li>
+                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
                                 <li class="waves-effect"><a>1</a></li>
-                                <li class="waves-effect"><a onMouseOver={() => M.toast({html: 'Página Siguiente'})}><i class="material-icons">chevron_right</i></a></li>
+                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
                             </ul>
                         </div>
 
@@ -163,11 +191,11 @@ class BookDetails extends Component {
 
                                 <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p> 
 
-                                <a style={{color: 'black'}} onClick={this.addLike} onMouseOver={() => M.toast({html: 'Me gusta la valoración'})} className="left btn waves-effect waves-light light-green lighten-4">
+                                <a style={{color: 'black'}} onClick={this.addLike} data-position="left" data-delay="50" data-tooltip="Me gusta la valoración" className="left btn waves-effect waves-light light-green lighten-4 tooltipped">
                                     <i className="material-icons">thumb_up</i>
                                 </a>
                                 &nbsp; &nbsp; &nbsp;
-                                <a style={{color: 'black'}} onClick={this.addDislike} onMouseOver={() => M.toast({html: 'No me gusta la valoración'})} className="btn waves-effect waves-light light-green lighten-4">
+                                <a style={{color: 'black'}} onClick={this.addDislike} data-position="right" data-delay="50" data-tooltip="No me gusta la valoración" className="btn waves-effect waves-light light-green lighten-4 tooltipped">
                                     <i className="material-icons">thumb_down</i>
                                 </a>
                                 <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> 3 &nbsp; &nbsp; <i className="material-icons">thumb_down</i> 0</p>
@@ -176,9 +204,9 @@ class BookDetails extends Component {
 
                         <div className="row">
                             <ul class="pagination center-align">
-                                <li class="disabled"><a onMouseOver={() => M.toast({html: 'Página Anterior'})}><i class="material-icons">chevron_left</i></a></li>
+                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
                                 <li class="waves-effect"><a>1</a></li>
-                                <li class="waves-effect"><a onMouseOver={() => M.toast({html: 'Página Siguiente'})}><i class="material-icons">chevron_right</i></a></li>
+                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
                             </ul>
                         </div>
 

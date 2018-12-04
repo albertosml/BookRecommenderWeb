@@ -32,6 +32,19 @@ class NewGenre extends Component {
                     </div>
                 </div>
 
+                <div className="row">
+                    <details className="col s8 offset-s2 card orange lighten-2">
+                        <summary className="card-content white-text">Lista de géneros</summary>
+
+                        <div className="col s8 offset-s1" style={{marginTop: '2%'}}>
+                            Los géneros añadidos al sistema son: 
+                            <p>- Ficción</p>
+                            <p>- Amor</p> 
+                            <p>- Aventuras</p>
+                        </div>
+                    </details>
+                </div>
+
                 <Footer/>
             </div>
         )

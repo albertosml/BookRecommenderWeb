@@ -102,6 +102,7 @@ class NewBook extends Component {
                                     <div class="file-path-wrapper">
                                         <input className="file-path" id="image" name="image" defaultValue="foto_la_mare_balena.jpeg" type="text" />
                                     </div>
+                                    <span class="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, que no tengan derechos de autor; en el caso de que se suba una imagen que no sea libre, la responsabilidad caerá sobre usted.</span>
                                 </div>
                             </div>
 

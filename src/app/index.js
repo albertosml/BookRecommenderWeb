@@ -44,6 +44,14 @@ class Inicio extends Component {
                 hoy no hay clase porque tengo un resacón...</p>
                         </div>
 
+                        <div className="row">
+                            <ul class="pagination center-align">
+                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
+                                <li class="waves-effect"><a>1</a></li>
+                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
+                            </ul>
+                        </div>
+
                         <div className="col s10 offset-s1 card light-green lighten-3">
                             <p className="center"><strong>Comentario</strong></p>
                             <form onSubmit={this.addComment}>
@@ -64,9 +72,9 @@ class Inicio extends Component {
 
                 <div className="row">
                     <ul class="pagination center-align">
-                        <li class="disabled"><a onMouseOver={() => M.toast({html: 'Página Anterior'})}><i class="material-icons">chevron_left</i></a></li>
+                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
                         <li class="waves-effect"><a>1</a></li>
-                        <li class="waves-effect"><a onMouseOver={() => M.toast({html: 'Página Siguiente'})}><i class="material-icons">chevron_right</i></a></li>
+                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
                     </ul>
                 </div>
 
