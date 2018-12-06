@@ -95,9 +95,9 @@ class BookDetails extends Component {
                             <li className="tab col s5"><a className="green-text" href="#comentarios">Comentarios</a></li>
                         </ul>
                     </div>
-                    <div id="comentarios" className="col s10 offset-s1 green darken-2" style={{marginTop:"1%"}}>
+                    <div id="comentarios" className="col s10 offset-s1 green" style={{marginTop:"1%"}}>
                         <div className="row">
-                            <details className="col s8 offset-s2 card orange darken-4" style={{marginTop:"2%"}}>
+                            <details className="col s8 offset-s2 card orange lighten-2" style={{marginTop:"2%"}}>
                                 <summary className="card-content white-text">Clase de pilates del lunes</summary>
 
                                 <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>admin (18/02/2018 - 12:59):</strong></p> 
@@ -177,9 +177,9 @@ class BookDetails extends Component {
                             </div>
                         </div>
                     </div>
-                    <div id="valoraciones" className="col s10 offset-s1 green darken-2"  style={{marginTop:"1%"}}>
+                    <div id="valoraciones" className="col s10 offset-s1 green"  style={{marginTop:"1%"}}>
                         <div className="row">
-                            <div className="col s8 offset-s2 card orange darken-4" style={{marginTop:"2%"}}>
+                            <div className="col s8 offset-s2 card orange lighten-2" style={{marginTop:"2%"}}>
                                 <p className="white-text center-align">La Mare Balena</p>
 
                                 <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>albertosml realizó esta valoración el día 18/02/2018 a las 12:59:</strong></p> 

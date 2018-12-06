@@ -23,7 +23,7 @@ class Inicio extends Component {
                 <Menu/>
                 <h3 className="center-align">Temas</h3>
                 <div className="row">
-                    <details className="col s8 offset-s2 card orange darken-4">
+                    <details className="col s8 offset-s2 card orange lighten-2">
                         <summary className="card-content white-text">Clase de pilates del lunes</summary>
 
                         <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>admin (18/02/2018 - 12:59):</strong></p> 

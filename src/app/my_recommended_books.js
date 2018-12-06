@@ -25,7 +25,7 @@ class RecommendedBooks extends Component {
                 <h3 className="center-align">Mis libros recomendados</h3>
                 
                 <div className="row">
-                    <div className="col s8 offset-s2 card orange darken-4">
+                    <div className="col s8 offset-s2 card orange lighten-2">
                         <p>
                             La Mare Balena
                             <div className="right">
@@ -38,7 +38,7 @@ class RecommendedBooks extends Component {
                 </div>
 
                 <div className="row">
-                    <div className="col s8 offset-s2 card orange darken-4">
+                    <div className="col s8 offset-s2 card orange lighten-2">
                         <p>
                             El Capitán Veneno
                             <div className="right">

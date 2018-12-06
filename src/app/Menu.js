@@ -14,7 +14,7 @@ export default class Menu extends Component {
                         <a href="#" data-target="slide-out" className="sidenav-trigger show-on-large"><i className="material-icons">menu</i></a>
                     </div>
                 </nav>
-                <ul id="slide-out" style={{overflow: 'scroll'}} className="sidenav">
+                <ul id="slide-out" className="sidenav">
                     <li>
                         <div className="user-view">
                             <div className="background"><img src="images/libros.jpg"/></div>
@@ -49,7 +49,6 @@ export default class Menu extends Component {
                     <li><a href="my_readed_books.html"><i className="material-icons">book</i>Mis Libros Leídos</a></li>
                     <li><div className="divider"></div></li>
                     <li><a href="my_recommended_books.html"><i className="material-icons">book</i>Mis Libros Recomendados</a></li>
-                    <li><div className="divider"></div></li>
                 </ul>   
             </div>
         )

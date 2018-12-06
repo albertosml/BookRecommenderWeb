@@ -21,7 +21,7 @@ class ReadedBooks extends Component {
                 <h3 className="center-align">Mis libros leídos</h3>
                 
                 <div className="row">
-                    <div className="col s8 offset-s2 card orange darken-4">
+                    <div className="col s8 offset-s2 card orange lighten-2">
                         <p>
                             La Mare Balena
                             <div className="right">
@@ -34,7 +34,7 @@ class ReadedBooks extends Component {
                 </div>
 
                 <div className="row">
-                    <div className="col s8 offset-s2 card orange darken-4">
+                    <div className="col s8 offset-s2 card orange lighten-2">
                         <p>
                             El Capitán Veneno
                             <div className="right">
