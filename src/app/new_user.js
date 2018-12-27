@@ -7,16 +7,67 @@ import Footer from './Footer';
 import Chips, { Chip } from 'react-chips';
 
 class NewUser extends Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
           chips: [],
-          suggestions: ["Ficción" , "Humor", "Amor", "Muerte", "Guerra", "Novela histórica", "Odio", "Aventuras"] 
+          suggestions: [], 
+          username: '',
+          name: '',
+          surname: '',
+          email: '',
+          password: '',
+          confirmpassword: ''
         }
+        this.handleChange = this.handleChange.bind(this);
+        this.newUser = this.newUser.bind(this);
     }
 
-    newUser() {
-        M.toast({html: 'Usuario creado'});
+    componentDidMount() {
+        fetch('/genrelist',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                // Preparo array de géneros de sugerencia
+                let array = [];
+                data.map(d => {
+                    array.push(d.name);
+                }); 
+
+                // Inserto array de géneros de sugerencia
+                this.setState({
+                    suggestions: array
+                });
+            })   
+            .catch(err => console.log(err));
+    }
+
+    newUser(e) {
+        e.preventDefault();
+        fetch('/users/signup',{
+            method: 'POST',
+            body: JSON.stringify(this.state),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) M.toast({html: 'Usuario creado'});
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
+    }
+
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name] : value });
     }
 
     render() {
@@ -31,47 +82,55 @@ class NewUser extends Component {
                         <form onSubmit={this.newUser}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="username">Nombre de usuario</label>
-                                    <input type="text" id="username" name="username" className="materialize-textarea" defaultValue=""/> 
+                                    <label htmlFor="username">Nombre de usuario</label>
+                                    <input type="text" name="username" className="materialize-textarea" defaultValue={this.state.username} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="password">Contraseña</label> 
-                                    <input type="password" id="password" name="password" className="materialize-textarea" defaultValue=""/> 
+                                    <label htmlFor="name">Nombre</label>
+                                    <input type="text" name="name" className="materialize-textarea" defaultValue={this.state.name} onChange={this.handleChange} /> 
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="input-field col s12">
+                                    <label htmlFor="surname">Apellidos</label> 
+                                    <input type="text" name="surname" className="materialize-textarea" defaultValue={this.state.surname} onChange={this.handleChange} /> 
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="input-field col s12">
+                                    <label htmlFor="email">Correo Electrónico</label> 
+                                    <input type="email" name="email" className="materialize-textarea" defaultValue={this.state.email} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="name">Nombre</label>
-                                    <input type="text" id="name" name="name" className="materialize-textarea" defaultValue=""/> 
+                                    <label htmlFor="password">Contraseña</label> 
+                                    <input type="password" name="password" className="materialize-textarea" defaultValue={this.state.password} onChange={this.handleChange} />  
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="surname">Apellidos</label> 
-                                    <input type="text" id="surname" name="surname" className="materialize-textarea" defaultValue=""/> 
+                                    <label htmlFor="confirmpassword">Confirmar contraseña</label> 
+                                    <input type="password" name="confirmpassword" className="materialize-textarea" defaultValue={this.state.confirm_password} onChange={this.handleChange} /> 
                                 </div>
                             </div>
-
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <label for="email">Correo Electrónico</label> 
-                                    <input type="email" id="email" name="email" className="materialize-textarea" defaultValue=""/> 
-                                </div>
-                            </div>
-
+                            
                             <div className="row">
                                 <div className="col s12">
-                                    <label for="genres">Géneros Favoritos</label> 
+                                    <label htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
+                                    <span className="helper-text" data-error="wrong" data-success="right">Si su género no aparece, pinche en el botón de añadir nuevo género e insértelo allí.</span>
                                 </div>
                             </div>
 
-                            <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
+                            <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
                                 Registrar
                             </button>
                         </form>

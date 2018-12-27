@@ -31,10 +31,10 @@ export default class Menu extends Component {
                     <li>
                         <div className="nav-wrapper">
                             <form action="book_details.html">
-                                <div className="input-field">
+                                <div className="input-field"> 
                                     <input id="search" type="search" placeholder="Buscar Libro" required />
-                                    <label className="label-icon" for="search"><a href="book_details.html"><i className="material-icons">search</i></a></label>
-                                    <i class="material-icons">close</i>
+                                    <label className="label-icon" htmlFor="search"><a href="book_details.html"><i className="material-icons">search</i></a></label>
+                                    <i className="material-icons">close</i>
                                 </div>
                             </form>
                         </div>
