@@ -5,8 +5,53 @@ import Menu from './Menu';
 import Footer from './Footer';
 
 class NewSession extends Component {
-    startSession() {
+    constructor() {
+        super();
+        this.state = {
+          username: '',
+          password: ''
+        }
+        this.handleChange = this.handleChange.bind(this);
+        this.startSession = this.startSession.bind(this);
+    }
 
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name] : value });
+    }
+
+    componentDidMount() {
+        fetch('/verifysession',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg == 'SI') location.href = "/index.html";
+            })
+            .catch(err => console.log(err));
+    }
+
+    startSession(e) {
+        e.preventDefault();
+        fetch('/users/signin',{
+            method: 'POST',
+            body: JSON.stringify(this.state),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) location.href = "/index.html";
+                else M.toast({html: data.msg});
+                this.setState({ username: '', password: ''});
+            })
+            .catch(err => console.log(err));
     }
     
     render() {
@@ -19,22 +64,22 @@ class NewSession extends Component {
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
                         <form onSubmit={this.startSession}>
-                        <div className="row">
+                            <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="username">Nombre de usuario</label>
-                                    <input type="text" id="username" name="username" className="materialize-textarea"/> 
+                                    <label htmlFor="username">Nombre de usuario</label>
+                                    <input type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="password">Contraseña</label> 
-                                    <input type="password" id="password" name="password" className="materialize-textarea"/> 
+                                    <label htmlFor="password">Contraseña</label> 
+                                    <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
                                 </div>
                             </div>
 
-                            <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                Iniciar
+                            <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
+                                Iniciar Sesión
                             </button>
                         </form>
                     </div>

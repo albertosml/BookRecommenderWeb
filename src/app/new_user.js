@@ -24,6 +24,19 @@ class NewUser extends Component {
     }
 
     componentDidMount() {
+        fetch('/verifysession',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg == 'SI') location.href = "/index.html";
+            })
+            .catch(err => console.log(err));
+
         fetch('/genrelist',{
             method: 'GET',
             headers: {
@@ -59,7 +72,7 @@ class NewUser extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                if(data.msg.length == 0) M.toast({html: 'Usuario creado'});
+                if(data.msg.length == 0) location.href = 'index.html';
                 else M.toast({html: data.msg});
             })
             .catch(err => console.log(err));
@@ -83,42 +96,42 @@ class NewUser extends Component {
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="username">Nombre de usuario</label>
-                                    <input type="text" name="username" className="materialize-textarea" defaultValue={this.state.username} onChange={this.handleChange} /> 
+                                    <input type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="name">Nombre</label>
-                                    <input type="text" name="name" className="materialize-textarea" defaultValue={this.state.name} onChange={this.handleChange} /> 
+                                    <input type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="surname">Apellidos</label> 
-                                    <input type="text" name="surname" className="materialize-textarea" defaultValue={this.state.surname} onChange={this.handleChange} /> 
+                                    <input type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="email">Correo Electrónico</label> 
-                                    <input type="email" name="email" className="materialize-textarea" defaultValue={this.state.email} onChange={this.handleChange} /> 
+                                    <input type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="password">Contraseña</label> 
-                                    <input type="password" name="password" className="materialize-textarea" defaultValue={this.state.password} onChange={this.handleChange} />  
+                                    <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="confirmpassword">Confirmar contraseña</label> 
-                                    <input type="password" name="confirmpassword" className="materialize-textarea" defaultValue={this.state.confirm_password} onChange={this.handleChange} /> 
+                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirm_password} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             

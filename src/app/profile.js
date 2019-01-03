@@ -10,9 +10,76 @@ class Perfil extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          chips: ["Ficción" , "Humor"],
-          suggestions: ["Ficción" , "Humor", "Amor", "Muerte", "Guerra", "Novela histórica", "Odio", "Aventuras"] 
+            chips: [],
+            suggestions: [], 
+            name: '',
+            surname: '',
+            email: '',
+            password: '',
+            confirmpassword: ''
         }
+        this.handleChange = this.handleChange.bind(this);
+        this.editUser = this.editUser.bind(this);
+    }
+
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name] : value });
+    }
+
+    componentDidMount() {
+        fetch('/verifysession',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg == 'NO') location.href = "/index.html";
+            })
+            .catch(err => console.log(err));
+
+        fetch('/genrelist',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                // Preparo array de géneros de sugerencia
+                let array = [];
+                data.map(d => {
+                    array.push(d.name);
+                }); 
+
+                // Inserto array de géneros de sugerencia
+                this.setState({
+                    suggestions: array
+                });
+            })   
+            .catch(err => console.log(err));
+
+        fetch('/user/data',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                this.setState({
+                    chips: data.generos,
+                    name: data.user.name,
+                    surname: data.user.surname,
+                    email: data.user.email
+                });
+            })   
+            .catch(err => console.log(err));
     }
 
     unsubscribeUser() {
@@ -29,47 +96,55 @@ class Perfil extends Component {
             <div>
                 <Menu/>
 
-                <h3 className="center-align">Datos del usuario: albertosml</h3>
+                <h3 className="center-align">Perfil</h3>
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
                         <form onSubmit={this.editUser}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="name">Nombre</label>
-                                    <input type="text" id="name" name="name" defaultValue="Alberto Silvestre"/> 
+                                    <label htmlFor="name">Nombre</label>
+                                    <input type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="surname">Apellidos</label> 
-                                    <input type="text" id="surname" name="surname" defaultValue="Montes Linares"/> 
+                                    <label htmlFor="surname">Apellidos</label> 
+                                    <input type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="password">Contraseña</label> 
-                                    <input type="password" id="password" name="password" defaultValue="alberto"/> 
+                                    <label htmlFor="email">Correo Electrónico</label> 
+                                    <input type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
+                                </div>
+                            </div>
+                            
+                            <div className="row">
+                                <div className="input-field col s12">
+                                    <label htmlFor="password">Contraseña</label> 
+                                    <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label for="email">Correo Electrónico</label> 
-                                    <input type="email" id="email" name="email" defaultValue="albertosml@correo.ugr.es"/> 
+                                    <label htmlFor="confirmpassword">Confirmar contraseña</label> 
+                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirm_password} onChange={this.handleChange} /> 
                                 </div>
                             </div>
-
+                            
                             <div className="row">
                                 <div className="col s12">
-                                    <label for="genres">Géneros Favoritos</label> 
+                                    <label htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
+                                    <span className="helper-text" data-error="wrong" data-success="right">Si su género no aparece, pinche en el botón de añadir nuevo género e insértelo allí.</span>
                                 </div>
                             </div>
 
-                            <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
+                            <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
                                 Modificar
                             </button>
                         </form>
