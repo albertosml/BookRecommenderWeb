@@ -16,7 +16,11 @@ class Perfil extends Component {
             surname: '',
             email: '',
             password: '',
-            confirmpassword: ''
+            confirmpassword: '',
+            chips_old: [],
+            name_old: '',
+            surname_old: '',
+            email_old: '',
         }
         this.handleChange = this.handleChange.bind(this);
         this.editUser = this.editUser.bind(this);
@@ -74,9 +78,13 @@ class Perfil extends Component {
             .then(data => { 
                 this.setState({
                     chips: data.generos,
-                    name: data.user.name,
-                    surname: data.user.surname,
-                    email: data.user.email
+                    name: '',
+                    surname: '',
+                    email: '',
+                    chips_old: data.generos,
+                    name_old: data.user.name,
+                    surname_old: data.user.surname,
+                    email_old: data.user.email
                 });
             })   
             .catch(err => console.log(err));
@@ -87,8 +95,30 @@ class Perfil extends Component {
         {/* Con Express doy la página*/}
     }
 
-    editUser() {
-        M.toast({html: 'Usuario editado'});    
+    editUser(e) {
+        e.preventDefault();
+        fetch('/user/profile',{
+            method: 'POST',
+            body: JSON.stringify(this.state),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                if(data.msg.length == 0) M.toast({html: 'Usuario editado'}); 
+                else M.toast({html: data.msg});
+
+                // Actualizo los cambios en el formulario
+                if(this.state.name.length >0) this.setState({ name: '', name_old: this.state.name });
+                if(this.state.surname.length >0) this.setState({ surname: '', surname_old: this.state.surname });
+                if(this.state.email.length >0) this.setState({ email: '', email_old: this.state.email });
+
+                // Vacío los campos relacionados con la contraseña
+                this.setState({ password: '', confirmpassword: ''});
+            })   
+            .catch(err => console.log(err));
     }
 
     render() {
@@ -100,11 +130,13 @@ class Perfil extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
+                        <p className="center">Rellene los campos que quiera modificar</p>
                         <form onSubmit={this.editUser}>
                             <div className="row">
-                                <div className="input-field col s12">
+                                <div className="input-field col s12">    
                                     <label htmlFor="name">Nombre</label>
                                     <input type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Nombre actual: {this.state.name_old}</span>
                                 </div>
                             </div>
 
@@ -112,6 +144,7 @@ class Perfil extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="surname">Apellidos</label> 
                                     <input type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Apellidos actuales: {this.state.surname_old}</span>
                                 </div>
                             </div>
 
@@ -119,6 +152,7 @@ class Perfil extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="email">Correo Electrónico</label> 
                                     <input type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Email actual: {this.state.email_old}</span>
                                 </div>
                             </div>
                             
@@ -126,13 +160,14 @@ class Perfil extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="password">Contraseña</label> 
                                     <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
+                                    <span className="helper-text" data-error="wrong" data-success="right">Para modificar la contraseña, introduzca una nueva y confirmela.</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="confirmpassword">Confirmar contraseña</label> 
-                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirm_password} onChange={this.handleChange} /> 
+                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirmpassword} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
@@ -141,6 +176,8 @@ class Perfil extends Component {
                                     <label htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
                                     <span className="helper-text" data-error="wrong" data-success="right">Si su género no aparece, pinche en el botón de añadir nuevo género e insértelo allí.</span>
+                                    <br/>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Cuando seleccione un género, no le de a la tecla de 'INTRO', sino que lo seleccione con el ratón.</span>
                                 </div>
                             </div>
 

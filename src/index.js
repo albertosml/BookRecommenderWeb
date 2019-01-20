@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const path = require('path');
 const app = express();
 const session = require('express-session');
+const fileUpload = require('express-fileupload');
 
 // Db connection
 const { mongoose } = require('./database');
@@ -18,6 +19,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+app.use(fileUpload());
 
 // Routes
 app.use('/', require('./routes/routes'));

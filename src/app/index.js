@@ -3,105 +3,219 @@ import { render } from 'react-dom';
 
 import Menu from './Menu';
 import Footer from './Footer';
+import Pagination from 'react-js-pagination';
 
 class Inicio extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            username: '',
+            title: '',
+            description: '',
+            response: '',
+            temas: []
+        };
+
+        this.handleChange = this.handleChange.bind(this);
+        this.addTheme = this.addTheme.bind(this);
+        this.addComment = this.addComment.bind(this);
     }
 
-    addTheme(){
-        M.toast({html: 'Tema Creado'});
+    componentDidMount() {
+        fetch('/user',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) this.setState({username: data.username });
+            })
+            .catch(err => console.log(err));
+
+        this.getThemes();
     }
 
-    addComment() {
-        M.toast({html: 'Comentario Realizado'});
+    getThemes(){
+        fetch('/freethemes',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ temas: data });
+            })
+            .catch(err => console.log(err));
+    }
+
+    addTheme(e){
+        e.preventDefault();
+
+        fetch('/theme/signup',{
+            method: 'POST',
+            body: JSON.stringify(this.state),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Tema Creado'});
+                    this.setState({
+                        title: '',
+                        description: ''
+                    });
+                    this.getThemes();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
+    }
+
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name] : value });
+    }
+
+    addComment(e) {
+        e.preventDefault();
+
+        fetch('/comment/signup',{
+            method: 'POST',
+            body: JSON.stringify({ temaid: e.target.temaId.value, response: this.state.response}),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Comentario Realizado'});
+                    this.setState({
+                        response: ''
+                    });
+                    this.getThemes();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
     }
 
     render() {
+        let theme_form;
+
+        if(this.state.username.length > 0) {
+            theme_form = <div className="row">
+                            <div className="col s8 offset-s2 card light-green lighten-3">
+                                <p className="center"><strong>Nuevo Tema</strong></p>
+                                <form onSubmit={this.addTheme}>
+                                    <div className="row">
+                                        <div className="input-field col s12">
+                                            <label htmlFor="title">Título</label>
+                                            <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
+                                        </div>
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="input-field col s12">
+                                            <label htmlFor="description">Descripción</label> 
+                                            <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                        </div>
+                                    </div>
+
+                                    <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
+                                        Crear
+                                    </button>
+                                </form>
+                            </div>
+                        </div>;
+        }
+
         return (
             <div>
                 <Menu/>
                 <h3 className="center-align">Temas</h3>
                 <div className="row">
-                    <details className="col s8 offset-s2 card orange lighten-2">
-                        <summary className="card-content white-text">Clase de pilates del lunes</summary>
+                    {
+                        this.state.temas.map(tema => {
+                            return (
+                                <details className="col s8 offset-s2 card orange lighten-2" key={tema.id}>
+                                    <summary className="card-content white-text">{tema.title}</summary>
 
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>admin (18/02/2018 - 12:59):</strong></p> 
-                        <div className="row">
-                            <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                hoy no hay clase porque tengo un resacón...</p>
-                        </div>
-
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>albertosml (19/02/2018 - 00:45):</strong></p> 
-                        <div className="row">
-                            <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                hoy no hay clase porque tengo un resacón...</p>
-                        </div>
-
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Pepe (19/02/2018 - 10:45):</strong></p> 
-                        <div className="row">
-                            <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                hoy no hay clase porque tengo un resacón...</p>
-                        </div>
-
-                        <div className="row">
-                            <ul class="pagination center-align">
-                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                                <li class="waves-effect"><a>1</a></li>
-                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
-                            </ul>
-                        </div>
-
-                        <div className="col s10 offset-s1 card light-green lighten-3">
-                            <p className="center"><strong>Comentario</strong></p>
-                            <form onSubmit={this.addComment}>
-                                <div className="row">
-                                    <div className="input-field col s12">
-                                        <label for="response">Respuesta</label> 
-                                        <textarea id="response" className="materialize-textarea" rows="3" cols="50"></textarea> 
+                                    <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{tema.user} abrió el tema el día {tema.fecha} a las {tema.hora}:</strong></p> 
+                                    <div className="row">
+                                        <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {tema.description}</p>
                                     </div>
-                                </div>
-                                
-                                <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                    Comentar
-                                </button>
-                            </form>
-                        </div>
-                    </details>
+
+                                    {
+                                        tema.comments.map(comment => {
+                                            return ( 
+                                                <div key={comment.fecha + comment.hora}>
+                                                    <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{comment.user} respondió al tema el día {comment.fecha} a las {comment.hora}:</strong></p> 
+                                                    <div className="row">
+                                                        <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {comment.description}</p>
+                                                    </div>
+                                                </div>       
+                                            )
+                                        })
+                                    }
+
+                                    <div className="row">
+                                        <ul className="pagination center-align">
+                                            <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
+                                            <li className="waves-effect"><a>1</a></li>
+                                            <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
+                                        </ul>
+                                    </div>
+
+                                    {(() => {
+                                        if(this.state.username.length > 0) {
+                                            return (
+                                                <div className="col s10 offset-s1 card light-green lighten-3">
+                                                    <p className="center"><strong>Comentario</strong></p>
+                                                    <form onSubmit={this.addComment}>
+                                                        <div className="row">
+                                                            <div className="input-field col s12">
+                                                                <label htmlFor="response">Respuesta</label> 
+                                                                <textarea name="response" className="materialize-textarea" value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                            </div>
+                                                        </div>
+
+                                                        <input type="hidden" name="temaId" value={tema.id} />
+                                                            
+                                                        <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
+                                                            Comentar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            );
+                                        }
+                                    })()}                               
+                                </details>
+                            )
+                        })
+                    }
                 </div>
 
-                <div className="row">
-                    <ul class="pagination center-align">
-                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                        <li class="waves-effect"><a>1</a></li>
-                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
-                    </ul>
+                <div className="row center-align">
+                    <Pagination
+                        activePage={this.state.activePage}
+                        itemsCountPerPage={2}
+                        totalItemsCount={this.state.total_acciones}
+                        pageRangeDisplayed={(this.state.total_acciones / 2) +1}
+                        onChange={this.handlePageChange}
+                    />
                 </div>
-
-                <div className="row">
-                    <div className="col s8 offset-s2 card light-green lighten-3">
-                        <p className="center"><strong>Nuevo Tema</strong></p>
-                        <form onSubmit={this.addTheme}>
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <label for="title">Título</label>
-                                    <input type="text" id="title" name="title"  /> 
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <label for="comment">Comentario</label> 
-                                    <textarea id="comment" className="materialize-textarea" rows="3" cols="50"></textarea> 
-                                </div>
-                            </div>
-
-                            <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                Crear
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                    
+                { theme_form }
 
                 <Footer/>
             </div>

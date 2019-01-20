@@ -9,14 +9,6 @@ const UserSchema = new Schema({
     surname: { type:String, required:true, trim:true },
     email: { type:String, required:true, trim:true },
     active: { type:Boolean, default:true }, 
-    valorations: [{
-        description: { type:String, required:true, trim:true },
-        note: { type:Number, required:true },
-        datetime: { type:Date, default:Date.now },
-        book: { type:Schema.Types.ObjectId, required:true, ref:'Book' },
-        likes: { type:Number, default:0 },
-        dislikes: { type:Number, default:0 }
-    }],
     favouritesgenres: [
         { genre: { type:Schema.Types.ObjectId, ref:'Favourite Genre' } }
     ],

@@ -7,11 +7,53 @@ import Footer from './Footer';
 import StarRatings from 'react-star-ratings';
 
 class BookDetails extends Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
-            rating: 0
+            rating: 0,
+            isbn: '',
+            title: '',
+            author: '',
+            url: '',
+            numpages: 0,
+            publicationdate: '',
+            publisher: '',
+            studio: '',
+            language: '',
+            genres: [],
+            type: ''
         };
+    }
+
+    componentDidMount() {
+        fetch('/book/data',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: window.location.search.split("=")[1] }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                if(data.data == undefined) location.href = '/index.html';
+
+                this.setState({
+                    title: data.data[0].title,
+                    isbn: data.data[0].isbn,
+                    author: data.data[0].author,
+                    numpages: data.data[0].numpages,
+                    genres: data.genres,
+                    type: data.data[0].type
+                });
+
+                if(data.data[0].publicationdate != undefined) this.setState({ publicationdate: data.data[0].publicationdate });
+                if(data.data[0].url.length > 0) this.setState({ url: data.data[0].url });
+                if(data.data[0].publisher.length > 0) this.setState({ publisher: data.data[0].publisher });
+                if(data.data[0].studio.length > 0) this.setState({ studio: data.data[0].studio });
+                if(data.data[0].language.length > 0) this.setState({ language: data.data[0].language });
+            })  
+        .catch(err => console.log(err));
     }
 
     changeRating( newRating, name ) {
@@ -41,7 +83,7 @@ class BookDetails extends Component {
     }
 
     addDislike() {
-        M.toast({html: 'Le ha dado a \'Mo me gusta\' esta valoración'});
+        M.toast({html: 'Le ha dado a \'No me gusta\' esta valoración'});
     }
     
     render() {
@@ -51,19 +93,19 @@ class BookDetails extends Component {
 
                 <div id="normal" className="row" style={{marginTop:'2%'}}>
                     <div className="col s4 offset-s2">
-                        <img style={{width:'100px', height:'150px'}} src="images/la_mare_balena.JPEG" />    
+                        <img style={{width:'100px', height:'150px'}} src={"images/books/" + this.state.isbn + "." + this.state.type} alt="No hay imagen" />    
                     </div>
 
                     <div className="col s6">
                         <h3>
-                            La Mare Balena
+                            {this.state.title}
                             &nbsp;
-                            <a href="book_edit.html" className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                            <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h3>
                         <div className="row">
                             <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
                             &nbsp; &nbsp; &nbsp;
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: 98145566156 \n - Autor: Victor Català \n - Número de páginas: 62 \n - Fecha de publicación: 09/08/2018 \n - URL: https://www.amazon.com/Mare-Balena-Catalan-Víctor-Català/dp/1500780170/ref=sr_1_3?ie=UTF8&qid=1539369463&sr=8-3&keywords=La+Mare-Balena \n - Editorial: CreateSpace Independent Publishing Platform \n - Estudio: CreateSpace Independent Publishing Platform \n - Idioma: Catalán \n - Géneros: Historias Cortas, Humor")} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: " + this.state.isbn + "\n - Autor: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate.split("T")[0] + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
                     </div>
                 </div>
@@ -71,20 +113,20 @@ class BookDetails extends Component {
                 <div id="responsive" className="row" style={{marginTop:'2%'}}>
                     <div className="row">
                         <h4 className="center-align">
-                            La Mare Balena
+                            {this.state.title}
                             &nbsp;
-                            <a href="book_edit.html" className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                            <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h4>
                     </div>
                         <div className="row center-align">
-                            <img style={{width:'100px', height:'150px', margin: 'auto'}} src="images/la_mare_balena.JPEG" />
+                            <img style={{width:'100px', height:'150px', margin: 'auto'}} src={"images/books/" + this.state.isbn + "." + this.state.type} alt="No hay imagen" />
                         </div>    
 
                         <div className="row center-align">
                             <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
                         </div>
                         <div className="row center-align">
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: 98145566156 \n - Autor: Victor Català \n - Número de páginas: 62 \n - Fecha de publicación: 09/08/2018 \n - URL: https://www.amazon.com/Mare-Balena-Catalan-Víctor-Català/dp/1500780170/ref=sr_1_3?ie=UTF8&qid=1539369463&sr=8-3&keywords=La+Mare-Balena \n - Editorial: CreateSpace Independent Publishing Platform \n - Estudio: CreateSpace Independent Publishing Platform \n - Idioma: Catalán \n - Géneros: Historias Cortas, Humor")} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: " + this.state.isbn + "\n - Autor: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate.split("T")[0] + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
                 </div>
 
@@ -119,10 +161,10 @@ class BookDetails extends Component {
                                 </div>
 
                                 <div className="row">
-                                    <ul class="pagination center-align">
-                                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                                        <li class="waves-effect"><a>1</a></li>
-                                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
+                                    <ul className="pagination center-align">
+                                        <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
+                                        <li className="waves-effect"><a>1</a></li>
+                                        <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
                                     </ul>
                                 </div>
 
@@ -131,7 +173,7 @@ class BookDetails extends Component {
                                     <form onSubmit={this.addComment}>
                                         <div className="row">
                                             <div className="input-field col s12">
-                                                <label for="response">Respuesta</label> 
+                                                <label htmlFor="response">Respuesta</label> 
                                                 <textarea id="response" className="materialize-textarea" rows="3" cols="50"></textarea> 
                                             </div>
                                         </div>
@@ -145,10 +187,10 @@ class BookDetails extends Component {
                         </div>
 
                         <div className="row">
-                            <ul class="pagination center-align">
-                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                                <li class="waves-effect"><a>1</a></li>
-                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
+                            <ul className="pagination center-align">
+                                <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
+                                <li className="waves-effect"><a>1</a></li>
+                                <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
                             </ul>
                         </div>
 
@@ -158,19 +200,19 @@ class BookDetails extends Component {
                                 <form onSubmit={this.addTheme}>
                                     <div className="row">
                                         <div className="input-field col s12">
-                                            <label for="title">Título</label>
+                                            <label htmlFor="title">Título</label>
                                             <input type="text" id="title" name="title"  /> 
                                         </div>
                                     </div>
 
                                     <div className="row">
                                         <div className="input-field col s12">
-                                            <label for="comment">Comentario</label> 
+                                            <label htmlFor="comment">Comentario</label> 
                                             <textarea id="comment" className="materialize-textarea" rows="3" cols="50"></textarea> 
                                         </div>
                                     </div>
 
-                                    <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
+                                    <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
                                         Crear
                                     </button>
                                 </form>
@@ -189,7 +231,7 @@ class BookDetails extends Component {
                         hoy no hay clase porque tengo un resacón...</p>
                                 </div>
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p> 
+                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p>
 
                                 <a style={{color: 'black'}} onClick={this.addLike} data-position="left" data-delay="50" data-tooltip="Me gusta la valoración" className="left btn waves-effect waves-light light-green lighten-4 tooltipped">
                                     <i className="material-icons">thumb_up</i>
@@ -203,10 +245,10 @@ class BookDetails extends Component {
                         </div>
 
                         <div className="row">
-                            <ul class="pagination center-align">
-                                <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                                <li class="waves-effect"><a>1</a></li>
-                                <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
+                            <ul className="pagination center-align">
+                                <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
+                                <li className="waves-effect"><a>1</a></li>
+                                <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
                             </ul>
                         </div>
 
@@ -215,21 +257,21 @@ class BookDetails extends Component {
                             <form onSubmit={this.addValoration}>
                                 <div className="row">
                                     <div className="input-field col s12">
-                                        <label for="description">Descripción</label> 
+                                        <label htmlFor="description">Descripción</label> 
                                         <textarea id="description" name="description" className="materialize-textarea" rows="3" cols="50"></textarea> 
                                     </div>
                                 </div>
 
                                 <div className="row">
                                     <div className="input-field col s12">
-                                        <label for="note">Nota</label> 
+                                        <label htmlFor="note">Nota</label> 
                                     </div>
                                     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                                     <StarRatings rating={this.state.rating} starRatedColor="yellow" starDimension="20px" starSpacing="5px" 
                                     changeRating={(rating,name) => this.changeRating(rating,name)} starEmptyColor="black" starHoverColor="yellow" numberOfStars={5} name='rating' />
                                 </div>
 
-                                <button style={{marginBottom: '4%', color: 'black'}} class="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
+                                <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
                                     Valorar
                                 </button>
                             </form>

@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import Select from 'react-select';
 
 export default class Menu extends Component {
     constructor(){
         super();
-        this.state = { username: '', name: '' };
+        this.state = { username: '', name: '', options: [] };
         this.closeSession = this.closeSession.bind(this);
+        this.doSearch = this.doSearch.bind(this);
     }
 
     componentDidMount() {
@@ -20,6 +22,20 @@ export default class Menu extends Component {
                 if(data.msg.length == 0) this.setState({username: data.username, name: data.name });
             })
             .catch(err => console.log(err));
+
+        fetch('/title', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({
+                    options: data.data
+                });
+            })
     }
 
     closeSession() {
@@ -31,11 +47,15 @@ export default class Menu extends Component {
             }
         })
             .then(res => res.json())
-            .then(data => {
-                M.toast({html: data.msg});
+            .then(data => { 
+                location.href = "/index.html"
                 this.forceUpdate();
             })
             .catch(err => console.log(err));
+    }
+
+    doSearch(o) {
+        location.href = "/book_details.html?isbn=" + o.label.split(" - ")[1];
     }
 
     render() {
@@ -59,16 +79,8 @@ export default class Menu extends Component {
                         </li>
                         <li><a href="profile.html"><i className="material-icons">perm_identity</i>Perfil</a></li>
                         <li><div className="divider"></div></li>
-                        <li>
-                            <div className="nav-wrapper">
-                                <form action="book_details.html">
-                                    <div className="input-field"> 
-                                        <input id="search" type="search" placeholder="Buscar Libro" required />
-                                        <label className="label-icon" htmlFor="search"><a href="book_details.html"><i className="material-icons">search</i></a></label>
-                                        <i className="material-icons">close</i>
-                                    </div>
-                                </form>
-                            </div>
+                        <li style={{marginTop: '2%'}}>
+                            <Select options={this.state.options} onChange={this.doSearch} placeholder="Buscar Libro" />
                         </li>
                         <li><div className="divider"></div></li>
                         <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
@@ -105,16 +117,8 @@ export default class Menu extends Component {
                         <li><div className="divider"></div></li>
                         <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                         <li><div className="divider"></div></li>
-                        <li>
-                            <div className="nav-wrapper">
-                                <form action="book_details.html">
-                                    <div className="input-field"> 
-                                        <input id="search" type="search" placeholder="Buscar Libro" required />
-                                        <label className="label-icon" htmlFor="search"><a href="book_details.html"><i className="material-icons">search</i></a></label>
-                                        <i className="material-icons">close</i>
-                                    </div>
-                                </form>
-                            </div>
+                        <li style={{marginTop: '2%'}}>
+                            <Select options={this.state.options} onChange={this.doSearch} placeholder="Buscar Libro"/>
                         </li>
                         <li><div className="divider"></div></li>
                     </ul>   
