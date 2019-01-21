@@ -23,7 +23,7 @@ class NewUser extends Component {
         this.newUser = this.newUser.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetch('/verifysession',{
             method: 'GET',
             headers: {

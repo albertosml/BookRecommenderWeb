@@ -54,7 +54,7 @@ class NewGenre extends Component {
             .catch(err => console.log(err));
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.mountGenresList();
     }
 

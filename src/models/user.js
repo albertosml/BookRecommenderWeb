@@ -12,12 +12,8 @@ const UserSchema = new Schema({
     favouritesgenres: [
         { genre: { type:Schema.Types.ObjectId, ref:'Favourite Genre' } }
     ],
-    useful_valorations: [
-        { useful_valoration: { type:Schema.Types.ObjectId, ref:'Useful Valoration' } }
-    ],
     readed_books: [
-        { readed_book: { type:Schema.Types.ObjectId, ref:'Readed Book' },
-          valorated: { type:Boolean, default:false } }
+        { readed_book: { type:Schema.Types.ObjectId, ref:'Readed Book' } }
     ],
     recomended_books: [
         { recomended_book: { type:Schema.Types.ObjectId, ref:'Recommended Book' } }

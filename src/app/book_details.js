@@ -5,14 +5,17 @@ import Menu from './Menu';
 import Footer from './Footer';
 
 import StarRatings from 'react-star-ratings';
+import Pagination from 'react-js-pagination';
+import ReactTooltip from 'react-tooltip';
 
 class BookDetails extends Component {
     constructor() {
         super();
         this.state = {
             rating: 0,
+            description: '',
             isbn: '',
-            title: '',
+            titulo: '',
             author: '',
             url: '',
             numpages: 0,
@@ -21,11 +24,32 @@ class BookDetails extends Component {
             studio: '',
             language: '',
             genres: [],
-            type: ''
+            type: '',
+            username: '',
+            valoraciones: [],
+            activePageValoration: 1,
+            num_total_valoraciones: 0,
+            puede_valorar: false,
+            title: '',
+            description: '',
+            response: '',
+            temas: [],
+            activePageTheme: 1,
+            num_total_temas: 1
         };
+
+        this.handleChange = this.handleChange.bind(this);
+        this.addValoration = this.addValoration.bind(this);
+        this.handlePageChange = this.handlePageChange.bind(this);
+        this.addLike = this.addLike.bind(this);
+        this.addDislike = this.addDislike.bind(this);
+        this.addPendingBook = this.addPendingBook.bind(this);
+        this.addTheme = this.addTheme.bind(this);
+        this.addComment = this.addComment.bind(this);
+        this.handlePageThemeChange = this.handlePageThemeChange.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetch('/book/data',{
             method: 'POST',
             body: JSON.stringify({ isbn: window.location.search.split("=")[1] }),
@@ -39,7 +63,7 @@ class BookDetails extends Component {
                 if(data.data == undefined) location.href = '/index.html';
 
                 this.setState({
-                    title: data.data[0].title,
+                    titulo: data.data[0].title,
                     isbn: data.data[0].isbn,
                     author: data.data[0].author,
                     numpages: data.data[0].numpages,
@@ -54,38 +78,225 @@ class BookDetails extends Component {
                 if(data.data[0].language.length > 0) this.setState({ language: data.data[0].language });
             })  
         .catch(err => console.log(err));
+
+        fetch('/user',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) this.setState({username: data.username });
+            })
+            .catch(err => console.log(err));
+
+        fetch('/canvalorate',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: window.location.search.split("=")[1] }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ puede_valorar: data.canvalorate });
+            })
+            .catch(err => console.log(err));
+
+        this.getValorations();
+        this.getThemes();
     }
 
-    changeRating( newRating, name ) {
+    changeRating(newRating) {
         this.setState({
           rating: newRating
         });
     }
 
+    handleChange(e) {
+        const { name, value } = e.target;
+        this.setState({ [name] : value });
+    }
+
+    handlePageChange(pageNumber) {
+        this.setState({ activePageValoration: pageNumber });
+        this.getValorations(pageNumber);
+    }
+
     addPendingBook() {
-        M.toast({html: 'Libro añadido como pendiente de leer'});
+        fetch('/newpendingbook',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: this.state.isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) M.toast({html: 'Libro añadido como pendiente de leer'});
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
     }
 
-    addValoration() {
-        M.toast({html: 'Valoración añadida'});
+    addValoration(e) {
+        e.preventDefault();
+
+        fetch('/valoration/signup',{
+            method: 'POST',
+            body: JSON.stringify({ description: this.state.description, note: this.state.rating, isbn: this.state.isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Valoración añadida'});
+                    this.setState({
+                        description: '',
+                        rating: 0
+                    });
+                    this.getValorations();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
     }
 
-    addComment() {
-        M.toast({html: 'Comentario añadido'});
+    getValorations(pageNumber = this.state.activePageValoration){
+        fetch('/valorations',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: window.location.search.split("=")[1], currentPage: pageNumber }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ valoraciones: data.array, num_total_valoraciones: data.countValorations  });
+            })
+            .catch(err => console.log(err));
     }
 
-    addTheme() {
-        M.toast({html: 'Tema añadido'});
+    addLike(id) {
+        fetch('/givelike',{
+            method: 'POST',
+            body: JSON.stringify({ like: true, valorationid: id }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Le ha dado a \'Me gusta\' esta valoración'});
+                    this.getValorations();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
     }
 
-    addLike() {
-        M.toast({html: 'Le ha dado a \'Me gusta\' esta valoración'});
+    addDislike(id) {
+        fetch('/givelike',{
+            method: 'POST',
+            body: JSON.stringify({ like: false, valorationid: id }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Le ha dado a \'No Me gusta\' esta valoración'});
+                    this.getValorations();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
     }
 
-    addDislike() {
-        M.toast({html: 'Le ha dado a \'No me gusta\' esta valoración'});
+    handlePageThemeChange(pageNumber) {
+        this.setState({ activePageTheme: pageNumber });
+        this.getThemes(pageNumber);
     }
-    
+
+    getThemes(pageNumber = this.state.activePageTheme){
+        fetch('/themes',{
+            method: 'POST',
+            body: JSON.stringify({ currentPage: pageNumber, book: window.location.search.split("=")[1] }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ temas: data.array, num_total_temas: data.countThemes  });
+            })
+            .catch(err => console.log(err));
+    }
+
+    addTheme(e){
+        e.preventDefault();
+
+        fetch('/theme/signup',{
+            method: 'POST',
+            body: JSON.stringify({ title: this.state.title, description: this.state.description, isbn: this.state.isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Tema Creado'});
+                    this.setState({
+                        title: '',
+                        description: ''
+                    });
+                    this.getThemes();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
+    }
+
+    addComment(e) {
+        e.preventDefault();
+
+        fetch('/comment/signup',{
+            method: 'POST',
+            body: JSON.stringify({ temaid: e.target.temaId.value, response: this.state.response}),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Comentario Realizado'});
+                    this.setState({
+                        response: ''
+                    });
+                    this.getThemes();
+                }
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
+    }
+
     render() {
         return (
             <div>
@@ -98,12 +309,18 @@ class BookDetails extends Component {
 
                     <div className="col s6">
                         <h3>
-                            {this.state.title}
+                            {this.state.titulo}
                             &nbsp;
                             <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h3>
                         <div className="row">
-                            <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
+                            {(() => {
+                                if(this.state.username.length > 0) {
+                                    return (
+                                        <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                    )
+                                }
+                            })()}
                             &nbsp; &nbsp; &nbsp;
                             <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: " + this.state.isbn + "\n - Autor: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate.split("T")[0] + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
@@ -113,7 +330,7 @@ class BookDetails extends Component {
                 <div id="responsive" className="row" style={{marginTop:'2%'}}>
                     <div className="row">
                         <h4 className="center-align">
-                            {this.state.title}
+                            {this.state.titulo}
                             &nbsp;
                             <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h4>
@@ -139,143 +356,221 @@ class BookDetails extends Component {
                     </div>
                     <div id="comentarios" className="col s10 offset-s1 green" style={{marginTop:"1%"}}>
                         <div className="row">
-                            <details className="col s8 offset-s2 card orange lighten-2" style={{marginTop:"2%"}}>
-                                <summary className="card-content white-text">Clase de pilates del lunes</summary>
+                            {
+                                this.state.temas.map(tema => {
+                                    return (
+                                        <details className="col s8 offset-s2 card orange lighten-2" key={tema.id}>
+                                            <summary className="card-content white-text">{tema.title}</summary>
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>admin (18/02/2018 - 12:59):</strong></p> 
-                                <div className="row">
-                                    <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                        hoy no hay clase porque tengo un resacón...</p>
-                                </div>
+                                            {(() => {
+                                                if(tema.paginatema == 1) {
+                                                    tema.comments_mostrados = tema.comments.slice(0,1);
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>albertosml (19/02/2018 - 00:45):</strong></p> 
-                                <div className="row">
-                                    <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                        hoy no hay clase porque tengo un resacón...</p>
-                                </div>
+                                                    return (
+                                                        <div>
+                                                            <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{tema.user} abrió el tema el día {tema.fecha} a las {tema.hora}:</strong></p> 
+                                                            <div className="row">
+                                                                <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {tema.description}</p>
+                                                            </div>
+                                                        </div>   
+                                                    );
+                                                }
+                                            })()}
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Pepe (19/02/2018 - 10:45):</strong></p> 
-                                <div className="row">
-                                    <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                        hoy no hay clase porque tengo un resacón...</p>
-                                </div>
+                                            {
+                                                tema.comments_mostrados.map(comment => {
+                                                    return ( 
+                                                        <div key={comment.fecha + comment.hora}>
+                                                            <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{comment.user} respondió al tema el día {comment.fecha} a las {comment.hora}:</strong></p> 
+                                                            <div className="row">
+                                                                <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {comment.description}</p>
+                                                            </div>
+                                                        </div>       
+                                                    )
+                                                })
+                                            }
 
-                                <div className="row">
-                                    <ul className="pagination center-align">
-                                        <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
-                                        <li className="waves-effect"><a>1</a></li>
-                                        <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
-                                    </ul>
-                                </div>
-
-                                <div className="col s10 offset-s1 card light-green lighten-3">
-                                    <p className="center"><strong>Comentario</strong></p>
-                                    <form onSubmit={this.addComment}>
-                                        <div className="row">
-                                            <div className="input-field col s12">
-                                                <label htmlFor="response">Respuesta</label> 
-                                                <textarea id="response" className="materialize-textarea" rows="3" cols="50"></textarea> 
+                                            <div className="row center-align">
+                                                <Pagination
+                                                    activePage={tema.paginatema}
+                                                    itemsCountPerPage={2}
+                                                    totalItemsCount={tema.comments.length+1}
+                                                    pageRangeDisplayed={((tema.comments.length+1) / 2) +1}
+                                                    onChange={(pageNumber) => {
+                                                        tema.paginatema = pageNumber;
+                                                        let item = (tema.paginatema-1)*2;
+                                                        if(tema.paginatema == 1) tema.comments_mostrados = tema.comments.slice(0,1);
+                                                        else tema.comments_mostrados = tema.comments.slice(item-1, item+1);
+                                                        this.forceUpdate();
+                                                    }}
+                                                />
                                             </div>
-                                        </div>
-                                        
-                                        <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                            Comentar
-                                        </button>
-                                    </form>
-                                </div>
-                            </details>
+
+                                            {(() => {
+                                                if(this.state.username.length > 0) {
+                                                    return (
+                                                        <div className="col s10 offset-s1 card light-green lighten-3">
+                                                            <p className="center"><strong>Comentario</strong></p>
+                                                            <form onSubmit={this.addComment}>
+                                                                <div className="row">
+                                                                    <div className="input-field col s12">
+                                                                        <label htmlFor="response">Respuesta</label> 
+                                                                        <textarea name="response" className="materialize-textarea" value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                                    </div>
+                                                                </div>
+
+                                                                <input type="hidden" name="temaId" value={tema.id} />
+                                                                    
+                                                                <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
+                                                                    Comentar
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    );
+                                                }
+                                            })()}                               
+                                        </details>
+                                    )
+                                })
+                            }
                         </div>
 
-                        <div className="row">
-                            <ul className="pagination center-align">
-                                <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
-                                <li className="waves-effect"><a>1</a></li>
-                                <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
-                            </ul>
-                        </div>
+                        {(() => {
+                            if(this.state.temas.length > 0) {
+                                return (
+                                    <div className="row center-align">
+                                        <Pagination
+                                            activePage={this.state.activePageTheme}
+                                            itemsCountPerPage={2}
+                                            totalItemsCount={this.state.num_total_temas}
+                                            pageRangeDisplayed={(this.state.num_total_temas / 2) +1}
+                                            onChange={this.handlePageThemeChange}
+                                        />
+                                    </div>
+                                )
+                            }
+                            else return <h3 className="row white-text center-align">No hay comentarios para este libro</h3>
+                        })()}
 
-                        <div className="row">
-                            <div className="col s8 offset-s2 card light-green lighten-3">
-                                <p className="center"><strong>Nuevo Tema</strong></p>
-                                <form onSubmit={this.addTheme}>
+                        {(() => {
+                            if(this.state.username.length > 0) {
+                                return (
                                     <div className="row">
-                                        <div className="input-field col s12">
-                                            <label htmlFor="title">Título</label>
-                                            <input type="text" id="title" name="title"  /> 
+                                        <div className="col s8 offset-s2 card light-green lighten-3">
+                                            <p className="center"><strong>Nuevo Tema</strong></p>
+                                            <form onSubmit={this.addTheme}>
+                                                <div className="row">
+                                                    <div className="input-field col s12">
+                                                        <label htmlFor="title">Título</label>
+                                                        <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
+                                                    </div>
+                                                </div>
+
+                                                <div className="row">
+                                                    <div className="input-field col s12">
+                                                        <label htmlFor="description">Descripción</label> 
+                                                        <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                    </div>
+                                                </div>
+
+                                                <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
+                                                    Crear
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
+                                )
+                            }
+                        })()}
 
-                                    <div className="row">
-                                        <div className="input-field col s12">
-                                            <label htmlFor="comment">Comentario</label> 
-                                            <textarea id="comment" className="materialize-textarea" rows="3" cols="50"></textarea> 
-                                        </div>
-                                    </div>
-
-                                    <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                        Crear
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
                     </div>
                     <div id="valoraciones" className="col s10 offset-s1 green"  style={{marginTop:"1%"}}>
-                        <div className="row">
-                            <div className="col s8 offset-s2 card orange lighten-2" style={{marginTop:"2%"}}>
-                                <p className="white-text center-align">La Mare Balena</p>
+                        {
+                            this.state.valoraciones.map((valoracion) => {
+                                return (
+                                    <div className="row">
+                                        <div className="col s8 offset-s2 card orange lighten-2" style={{marginTop:"2%"}}>
+                                            <p className="white-text center-align">{this.state.titulo}</p>
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>albertosml realizó esta valoración el día 18/02/2018 a las 12:59:</strong></p> 
-                                
-                                <div className="row">
-                                    <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                        hoy no hay clase porque tengo un resacón...</p>
-                                </div>
+                                            <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{valoracion.user} realizó esta valoración el día {valoracion.fecha} a las {valoracion.hora}:</strong></p> 
+                                            
+                                            <div className="row">
+                                                <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {valoracion.description}</p>
+                                            </div>
 
-                                <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p>
+                                            <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={valoracion.note} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p>
 
-                                <a style={{color: 'black'}} onClick={this.addLike} data-position="left" data-delay="50" data-tooltip="Me gusta la valoración" className="left btn waves-effect waves-light light-green lighten-4 tooltipped">
-                                    <i className="material-icons">thumb_up</i>
-                                </a>
-                                &nbsp; &nbsp; &nbsp;
-                                <a style={{color: 'black'}} onClick={this.addDislike} data-position="right" data-delay="50" data-tooltip="No me gusta la valoración" className="btn waves-effect waves-light light-green lighten-4 tooltipped">
-                                    <i className="material-icons">thumb_down</i>
-                                </a>
-                                <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> 3 &nbsp; &nbsp; <i className="material-icons">thumb_down</i> 0</p>
-                            </div>
-                        </div>
-
-                        <div className="row">
-                            <ul className="pagination center-align">
-                                <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
-                                <li className="waves-effect"><a>1</a></li>
-                                <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
-                            </ul>
-                        </div>
-
-                        <div className="col s8 offset-s2 card light-green lighten-3">
-                            <p className="center"><strong>Valoración</strong></p>
-                            <form onSubmit={this.addValoration}>
-                                <div className="row">
-                                    <div className="input-field col s12">
-                                        <label htmlFor="description">Descripción</label> 
-                                        <textarea id="description" name="description" className="materialize-textarea" rows="3" cols="50"></textarea> 
+                                            {(() => {
+                                                if(this.state.username.length > 0) {
+                                                    return (
+                                                        <div>
+                                                            <a style={{color: 'black'}} onClick={() => this.addLike(valoracion.id)} data-tip="De 'Me gusta' a esta valoración" className="left btn waves-effect waves-light light-green lighten-4">
+                                                                <i className="material-icons">thumb_up</i>
+                                                            </a>
+                                                            <ReactTooltip place="left" type="dark" effect="solid"/>
+                                                            &nbsp; &nbsp; &nbsp;
+                                                            <a style={{color: 'black'}} onClick={() => this.addDislike(valoracion.id)} data-tip="De 'No me gusta' a esta valoración" className="btn waves-effect waves-light light-green lighten-4">
+                                                                <i className="material-icons">thumb_down</i>
+                                                            </a>
+                                                        </div>
+                                                    )
+                                                }
+                                            })()}
+                                            
+                                            <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> {valoracion.likes} &nbsp; &nbsp; <i className="material-icons">thumb_down</i> {valoracion.dislikes}</p>
+                                        </div>
                                     </div>
-                                </div>
+                                )
+                            })
+                        } 
 
-                                <div className="row">
-                                    <div className="input-field col s12">
-                                        <label htmlFor="note">Nota</label> 
+                        {(() => {
+                            if(this.state.valoraciones.length > 0) {
+                                return (
+                                    <div className="row center-align">
+                                        <Pagination
+                                            activePage={this.state.activePageValoration}
+                                            itemsCountPerPage={2}
+                                            totalItemsCount={this.state.num_total_valoraciones}
+                                            pageRangeDisplayed={(this.state.num_total_valoraciones / 2) +1}
+                                            onChange={this.handlePageChange}
+                                        />
                                     </div>
-                                    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                                    <StarRatings rating={this.state.rating} starRatedColor="yellow" starDimension="20px" starSpacing="5px" 
-                                    changeRating={(rating,name) => this.changeRating(rating,name)} starEmptyColor="black" starHoverColor="yellow" numberOfStars={5} name='rating' />
-                                </div>
+                                )
+                            }
+                            else return <h3 className="row white-text center-align">No hay valoraciones para este libro</h3>
+                        })()}
+                            
+                        {(() => {
+                            if(this.state.username.length > 0 && this.state.puede_valorar) {
+                                return (
+                                    <div className="col s8 offset-s2 card light-green lighten-3">
+                                        <p className="center"><strong>Valoración</strong></p>
+                                        <form onSubmit={this.addValoration}>
+                                            <div className="row">
+                                                <div className="input-field col s12">
+                                                    <label htmlFor="description">Descripción</label> 
+                                                    <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                </div>
+                                            </div>
 
-                                <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit" id="button">
-                                    Valorar
-                                </button>
-                            </form>
-                        </div>
+                                            <div className="row">
+                                                <div className="input-field col s12">
+                                                    <label htmlFor="note">Nota</label> 
+                                                </div>
+                                                &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                                <StarRatings rating={this.state.rating} starRatedColor="yellow" starDimension="20px" starSpacing="5px" 
+                                                changeRating={(rating) => this.changeRating(rating)} starEmptyColor="black" starHoverColor="yellow" numberOfStars={5} name='rating' />
+                                            </div>
+
+                                            <button style={{marginBottom: '4%', color: 'black'}} className="btn waves-effect waves-light light-green lighten-4" type="submit">
+                                                Valorar
+                                            </button>
+                                        </form>
+                                    </div>
+                                )
+                            }   
+                        })()}
                     </div>
                 </div>
         

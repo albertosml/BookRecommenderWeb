@@ -8,6 +8,7 @@ const Genre = require('../models/genre');
 const User = require('../models/user');
 const Book = require('../models/book');
 const Theme = require('../models/theme');
+const Valoration = require('../models/valoration');
 
 // Routes
 router.post('/uploadimage', function(req, res) {
@@ -330,7 +331,12 @@ router.post('/theme/signup', async (req,res) => {
             tema.title = req.body.title;
             tema.description = req.body.description;
             tema.user = usuario._id;
-            tema.book = null;
+            
+            if(req.body.isbn == null) tema.book = null;
+            else {
+                let b = await Book.findOne({ isbn: req.body.isbn });
+                tema.book = b._id;
+            }
 
             await tema.save();
                                 
@@ -363,11 +369,150 @@ router.post('/comment/signup', async (req,res) => {
     else res.json({ msg: 'Respuesta no introducida'});
 });
 
-router.get('/freethemes', async (req,res) => {
+router.post('/valoration/signup', async (req,res) => {
+    if(req.body.description.length > 0) { // Compruebo si aparece la descripción
+        if(req.body.note > 0) {
+            // Obtengo objeto libro
+            var book = await Book.findOne({ isbn: req.body.isbn});
+
+            // Obtengo objeto usuario
+            var user = await User.findOne({ username: req.session.username });
+
+            if(book != null && user != null) {
+                var valoration = new Valoration();
+                valoration.description = req.body.description;
+                valoration.note = req.body.note;
+                valoration.book = book._id;
+                valoration.user = user._id;
+
+                await valoration.save();
+                                                    
+                res.json({ msg: ''}); 
+            }
+            else res.json({ msg: 'Problema al añadir la valoración'});   
+        }
+        else res.json({ msg: 'La nota de la valoración debe estar entre 1 y 5'})
+    }
+    else res.json({ msg: 'Respuesta no introducida'});
+});
+
+router.post('/canvalorate', async (req,res) => {
+    // Puede valorar si ha registrado el libro como leído
+    var b = await Book.findOne({ isbn: req.body.isbn });
+    var user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: b._id}} });
+    
+    if(user == null) res.json({ canvalorate: false });
+    else res.json({ canvalorate: true });
+});
+
+router.post('/valorations', async (req,res) => {
     const array = [];
 
-    const temas = await Theme.find({ book: null });
+    var book = await Book.findOne({isbn: req.body.isbn });
+    var valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+
+    for(let i in valorations) {
+        // Obtengo fecha
+        let date = new Date(valorations[i].datetime);
+        let minutos = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+        let segundos = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+        // Obtengo usuario
+        const user = await User.findById(valorations[i].user);
+
+        array.push({ 
+            id: valorations[i]._id, 
+            fecha: date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear(), 
+            hora: date.getHours() + ":" + minutos + ":" + segundos,
+            note: valorations[i].note,
+            description: valorations[i].description,
+            user: user.username,
+            likes: valorations[i].likes.length,
+            dislikes: valorations[i].dislikes.length
+        });
+    }
+
+    // Cuento el número de valoraciones totales
+    const numValorations = await Valoration.find({ book: book._id }).countDocuments();
+
+    res.json({ array: array, countValorations: numValorations });
+});
+
+router.post('/pendingbooks', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: req.session.username }); 
+
+    for(let i in user.pending_books) {
+        var book = await Book.findOne({ _id: user.pending_books[i]._id});
+
+        if(book != null) {
+            array.push({ 
+                isbn: book.isbn,
+                title: book.title
+            });
+        }
+    }
+
+    res.json({ array: array });
+});
+
+router.post('/removependingbook', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: req.session.username }); 
+    var b = await Book.findOne({ isbn: req.body.isbn });
+
+    let pos;
+
+    for(let i in user.pending_books) {
+        var book = await Book.findOne({ _id: user.pending_books[i]._id});
+
+        if(book != null) {
+            if(b.isbn == book.isbn) pos = i;
+            else {
+                array.push({ 
+                    isbn: book.isbn,
+                    title: book.title
+                });
+            }
+        }
+    }
+
+    user.pending_books.splice(pos,1);
+    await user.save();
+
+    res.json({ array: array });
+});
+
+router.post('/addreadedbook', async (req,res) => {
+    var user = await User.findOne({ username: req.session.username }); 
+    var b = await Book.findOne({ isbn: req.body.isbn });
+
+    user.readed_books.push(b._id);
+    await user.save();
+
+    res.json({ msg: '' });
+});
+
+router.post('/themes', async (req,res) => {
+    const array = [];
+
+    var temas, numthemes;
+    if(req.body.book == null) {
+        temas = await Theme.find({ book: null }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
     
+        // Cuento el número de temas totales
+        numthemes = await Theme.find({ book: null }).countDocuments();
+    }
+    else {
+        var b = await Book.findOne({ isbn: req.body.book });
+        temas = await Theme.find({ book: b._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+        // Cuento el número de temas totales
+        numthemes = await Theme.find({ book: b._id }).countDocuments();
+    }
+
     for(let i in temas) {
         // Obtengo fecha
         let date = new Date(temas[i].datetime);
@@ -410,11 +555,13 @@ router.get('/freethemes', async (req,res) => {
             title: temas[i].title,
             description: temas[i].description,
             user: user.username,
-            comments: comentarios
+            comments: comentarios,
+            comments_mostrados: [],
+            paginatema: 1
         });
     }
 
-    res.json(array);
+    res.json({ array: array, countThemes: numthemes });
 });
 
 router.post('/newgenre', async (req,res) => {
@@ -431,6 +578,64 @@ router.post('/newgenre', async (req,res) => {
         else res.json({ msg: 'El género ya estaba añadido' });    
     }
     else res.json({ msg: 'Nombre del género no introducido'});
+});
+
+router.post('/newpendingbook', async (req,res) => {
+    var book = await Book.findOne({ isbn: req.body.isbn });
+    var user = await User.findOne({ username: req.session.username, pending_books: {$elemMatch: {_id: book._id}} });
+
+    if(user == null) {
+        user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: book._id}} });
+
+        if(user == null) {
+            user = await User.findOne({ username: req.session.username, recomended_books: {$elemMatch: {_id: book._id}} });
+
+            if(user == null) {
+                // Añado el libro como pendiente
+                user = await User.findOne({ username: req.session.username });
+                user.pending_books.push(book._id);
+                await user.save();
+
+                res.json({ msg: '' });
+            }
+            else res.json({ msg: 'El libro ya está recomendado por el sistema'}); 
+        }
+        else res.json({ msg: 'El libro ya está marcado como leído'});
+    }
+    else res.json({ msg: 'El libro ya está añadido como pendiente de leer'});
+});
+
+router.post('/givelike', async (req,res) => {
+    // Compruebo si el usuario actual no es el mismo que ha hecho la valoración
+    var val = await Valoration.findOne({ _id: req.body.valorationid }); 
+    var user = await User.findOne({ _id: val.user });
+
+    if(user.username == req.session.username) {
+        if(req.body.like) res.json({ msg: 'Un usuario no puede darle a \'Me gusta\' a una valoración creada por él/ella.'});
+        else res.json({ msg: 'Un usuario no puede darle a \'No me gusta\' a una valoración creada por él/ella.'});
+    }
+    else {
+        // Compruebo que el usuario no le haya dado a like o dislike a esta valoración
+        user = await User.findOne({ username: req.session.username });
+
+        var valo;
+        if(req.body.like) valo = await Valoration.findOne({ _id: req.body.valorationid, likes: {$elemMatch: { _id: user._id}} });
+        else valo = await Valoration.findOne({ _id: req.body.valorationid, dislikes: {$elemMatch: { _id: user._id}} });
+
+        if(valo == null) {
+            // Añado el like o dislike 
+            if(req.body.like) val.likes.push(user._id);
+            else val.dislikes.push(user._id);
+
+            await val.save();
+
+            res.json({ msg: '' });
+        }
+        else {
+            if(req.body.like) res.json({ msg: 'Ya le ha dado a \'Me gusta\' esta valoración' });
+            else res.json({ msg: 'Ya le ha dado a \'No me gusta\' esta valoración' });
+        }
+    }
 });
 
 router.get('/genrelist', async (req,res) => {

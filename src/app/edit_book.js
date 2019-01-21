@@ -41,7 +41,7 @@ class EditBook extends Component {
         this.fileSelectedHandle = this.fileSelectedHandle.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetch('/genrelist',{
             method: 'GET',
             headers: {

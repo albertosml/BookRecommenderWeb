@@ -13,15 +13,18 @@ class Inicio extends Component {
             title: '',
             description: '',
             response: '',
-            temas: []
+            temas: [],
+            activePageTheme: 1,
+            num_total_temas: 1
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.addTheme = this.addTheme.bind(this);
         this.addComment = this.addComment.bind(this);
+        this.handlePageChange = this.handlePageChange.bind(this);
     }
-
-    componentDidMount() {
+    
+    componentWillMount() {
         fetch('/user',{
             method: 'GET',
             headers: {
@@ -38,9 +41,15 @@ class Inicio extends Component {
         this.getThemes();
     }
 
-    getThemes(){
-        fetch('/freethemes',{
-            method: 'GET',
+    handlePageChange(pageNumber) {
+        this.setState({ activePageTheme: pageNumber });
+        this.getThemes(pageNumber);
+    }
+
+    getThemes(pageNumber = this.state.activePageTheme){
+        fetch('/themes',{
+            method: 'POST',
+            body: JSON.stringify({ currentPage: pageNumber, book: null }),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -48,7 +57,7 @@ class Inicio extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                this.setState({ temas: data });
+                this.setState({ temas: data.array, num_total_temas: data.countThemes  });
             })
             .catch(err => console.log(err));
     }
@@ -58,7 +67,7 @@ class Inicio extends Component {
 
         fetch('/theme/signup',{
             method: 'POST',
-            body: JSON.stringify(this.state),
+            body: JSON.stringify({ title: this.state.title, description: this.state.description, isbn: null }),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
@@ -150,13 +159,23 @@ class Inicio extends Component {
                                 <details className="col s8 offset-s2 card orange lighten-2" key={tema.id}>
                                     <summary className="card-content white-text">{tema.title}</summary>
 
-                                    <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{tema.user} abrió el tema el día {tema.fecha} a las {tema.hora}:</strong></p> 
-                                    <div className="row">
-                                        <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {tema.description}</p>
-                                    </div>
+                                    {(() => {
+                                        if(tema.paginatema == 1) {
+                                            tema.comments_mostrados = tema.comments.slice(0,1);
+
+                                            return (
+                                                <div>
+                                                    <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{tema.user} abrió el tema el día {tema.fecha} a las {tema.hora}:</strong></p> 
+                                                    <div className="row">
+                                                        <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {tema.description}</p>
+                                                    </div>
+                                                </div>   
+                                            );
+                                        }
+                                    })()}
 
                                     {
-                                        tema.comments.map(comment => {
+                                        tema.comments_mostrados.map(comment => {
                                             return ( 
                                                 <div key={comment.fecha + comment.hora}>
                                                     <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{comment.user} respondió al tema el día {comment.fecha} a las {comment.hora}:</strong></p> 
@@ -168,12 +187,20 @@ class Inicio extends Component {
                                         })
                                     }
 
-                                    <div className="row">
-                                        <ul className="pagination center-align">
-                                            <li className="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i className="material-icons">chevron_left</i></a></li>
-                                            <li className="waves-effect"><a>1</a></li>
-                                            <li className="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i className="material-icons">chevron_right</i></a></li>
-                                        </ul>
+                                    <div className="row center-align">
+                                        <Pagination
+                                            activePage={tema.paginatema}
+                                            itemsCountPerPage={2}
+                                            totalItemsCount={tema.comments.length+1}
+                                            pageRangeDisplayed={((tema.comments.length+1) / 2) +1}
+                                            onChange={(pageNumber) => {
+                                                tema.paginatema = pageNumber;
+                                                let item = (tema.paginatema-1)*2;
+                                                if(tema.paginatema == 1) tema.comments_mostrados = tema.comments.slice(0,1);
+                                                else tema.comments_mostrados = tema.comments.slice(item-1, item+1);
+                                                this.forceUpdate();
+                                            }}
+                                        />
                                     </div>
 
                                     {(() => {
@@ -207,10 +234,10 @@ class Inicio extends Component {
 
                 <div className="row center-align">
                     <Pagination
-                        activePage={this.state.activePage}
+                        activePage={this.state.activePageTheme}
                         itemsCountPerPage={2}
-                        totalItemsCount={this.state.total_acciones}
-                        pageRangeDisplayed={(this.state.total_acciones / 2) +1}
+                        totalItemsCount={this.state.num_total_temas}
+                        pageRangeDisplayed={(this.state.num_total_temas / 2) +1}
                         onChange={this.handlePageChange}
                     />
                 </div>

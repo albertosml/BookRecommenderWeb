@@ -8,8 +8,12 @@ const ValorationSchema = new Schema({
     datetime: { type:Date, default:Date.now },
     book: { type:Schema.Types.ObjectId, required:true, ref:'Book' },
     user: { type:Schema.Types.ObjectId, required:true, ref:'User' },
-    likes: { type:Number, default:0 },
-    dislikes: { type:Number, default:0 }
+    likes: [
+        { user: { type:Schema.Types.ObjectId, ref:'Users Likes Valoration'} }
+    ],
+    dislikes: [
+        { user: { type:Schema.Types.ObjectId, ref:'Users Dislikes Valoration'} }
+    ]
 });
     
 module.exports = mongoose.model('Valoration', ValorationSchema);

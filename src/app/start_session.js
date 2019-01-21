@@ -20,7 +20,7 @@ class NewSession extends Component {
         this.setState({ [name] : value });
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetch('/verifysession',{
             method: 'GET',
             headers: {

@@ -9,7 +9,7 @@ export default class Menu extends Component {
         this.doSearch = this.doSearch.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         fetch('/user',{
             method: 'GET',
             headers: {
