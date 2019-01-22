@@ -54,7 +54,7 @@ class PendingBooks extends Component {
     }
 
     handlePageChange(pageNumber) {
-        let item = (pageNumber-1)*2
+        let item = (pageNumber-1)*2;
         this.setState({ 
             activePage: pageNumber,
             pendBooks_mostrados: this.state.pendBooks.slice(item, item+2)
@@ -75,6 +75,7 @@ class PendingBooks extends Component {
                 this.setState({ pendBooks: data.array });
                 this.setState({ pendBooks_mostrados: this.state.pendBooks.slice(0,2) });
                 this.setState({ activePage: 1 });
+                M.toast({ html: 'Libro eliminado de la lista de libros pendientes'});
             })
             .catch(err => console.log(err));
     }

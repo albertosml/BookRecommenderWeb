@@ -5,38 +5,99 @@ import Menu from './Menu';
 import Footer from './Footer';
 
 import StarRatings from 'react-star-ratings';
+import Pagination from 'react-js-pagination';
 
 class MyValorations extends Component {
+    constructor() {
+        super();
+        this.state = {
+            username: '',
+            valoraciones: [],
+            activePageValoration: 1,
+            num_total_valoraciones: 1
+        };
+
+        this.handlePageChange = this.handlePageChange.bind(this);
+    }
+
+    componentWillMount() {
+        fetch('/user',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    this.setState({username: data.username });
+                    this.getValorations();
+                }
+                else location.href = "/index.html";
+            })
+            .catch(err => console.log(err));
+    }
+
+    handlePageChange(pageNumber) {
+        this.setState({ activePageValoration: pageNumber });
+        this.getValorations(pageNumber);
+    }
+
+    getValorations(pageNumber = this.state.activePageValoration){
+        fetch('/valorations',{
+            method: 'POST',
+            body: JSON.stringify({ username: this.state.username, isbn: null, currentPage: pageNumber }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ valoraciones: data.array, num_total_valoraciones: data.countValorations  });
+            })
+            .catch(err => console.log(err));
+    }
+
     render() {
         return (
             <div>
                 <Menu/>
                 <h3 className="center-align">Mis valoraciones</h3>
                 <div className="row">
-                    <div className="col s8 offset-s2 card orange lighten-2">
-                        <p className="white-text center-align">La Mare Balena</p>
+                    {
+                        this.state.valoraciones.map((valoracion) => {
+                            return (
+                                <div className="row">
+                                    <div className="col s8 offset-s2 card orange lighten-2">
+                                        <p className="white-text center-align">{valoracion.book}</p>
 
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Valoración hecha el día 18/02/2018 a las 12:59:</strong></p> 
-                        
-                        <div className="row">
-                            <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; El libro mola ya que el humor es muy chulo. Refleja la literatura catalana. Profe, menos mal que
-                hoy no hay clase porque tengo un resacón...</p>
-                        </div>
+                                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>{valoracion.user} realizó esta valoración el día {valoracion.fecha} a las {valoracion.hora}:</strong></p> 
+                                            
+                                        <div className="row">
+                                            <p className="col s10 offset-m1">&nbsp; &nbsp; &nbsp; &nbsp; {valoracion.description}</p>
+                                        </div>
 
-                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={3} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p> 
+                                        <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={valoracion.note} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p>
+                                        
+                                        <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> {valoracion.likes} &nbsp; &nbsp; <i className="material-icons">thumb_down</i> {valoracion.dislikes}</p>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    } 
 
-                        <p className="right">&nbsp; &nbsp; &nbsp; &nbsp; <i className="material-icons">thumb_up</i> 3 &nbsp; &nbsp; <i className="material-icons">thumb_down</i> 0</p>
+                    <div className="row center-align">
+                        <Pagination
+                            activePage={this.state.activePageValoration}
+                            itemsCountPerPage={2}
+                            totalItemsCount={this.state.num_total_valoraciones}
+                            pageRangeDisplayed={(this.state.num_total_valoraciones / 2) +1}
+                            onChange={this.handlePageChange}
+                        />
                     </div>
                 </div>
-
-                <div className="row">
-                    <ul class="pagination center-align">
-                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                        <li class="waves-effect"><a>1</a></li>
-                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
-                    </ul>
-                </div>
-
 
                 <Footer/>
             </div>

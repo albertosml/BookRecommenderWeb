@@ -79,11 +79,11 @@ export default class Menu extends Component {
                         </li>
                         <li><a href="profile.html"><i className="material-icons">perm_identity</i>Perfil</a></li>
                         <li><div className="divider"></div></li>
+                        <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
+                        <li><div className="divider"></div></li>
                         <li style={{marginTop: '2%'}}>
                             <Select options={this.state.options} onChange={this.doSearch} placeholder="Buscar Libro" />
                         </li>
-                        <li><div className="divider"></div></li>
-                        <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                         <li><div className="divider"></div></li>
                         <li><a href="my_valorations.html"><i className="material-icons">book</i>Mis Valoraciones</a></li>
                         <li><div className="divider"></div></li>

@@ -89,6 +89,8 @@ class BookDetails extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) this.setState({username: data.username });
+                this.getValorations();
+                this.getThemes();
             })
             .catch(err => console.log(err));
 
@@ -105,9 +107,6 @@ class BookDetails extends Component {
                 this.setState({ puede_valorar: data.canvalorate });
             })
             .catch(err => console.log(err));
-
-        this.getValorations();
-        this.getThemes();
     }
 
     changeRating(newRating) {
@@ -160,7 +159,8 @@ class BookDetails extends Component {
                     M.toast({html: 'Valoración añadida'});
                     this.setState({
                         description: '',
-                        rating: 0
+                        rating: 0,
+                        puede_valorar: false
                     });
                     this.getValorations();
                 }
@@ -172,7 +172,7 @@ class BookDetails extends Component {
     getValorations(pageNumber = this.state.activePageValoration){
         fetch('/valorations',{
             method: 'POST',
-            body: JSON.stringify({ isbn: window.location.search.split("=")[1], currentPage: pageNumber }),
+            body: JSON.stringify({ username: null, isbn: window.location.search.split("=")[1], currentPage: pageNumber }),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'

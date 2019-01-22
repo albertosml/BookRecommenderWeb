@@ -4,17 +4,126 @@ import { render } from 'react-dom';
 import Menu from './Menu';
 import Footer from './Footer';
 
+import ReactTooltip from 'react-tooltip';
+import Pagination from 'react-js-pagination';
+import Slider from 'react-rangeslider';
+
 class RecommendedBooks extends Component {
+    constructor (props, context) {
+        super(props, context);
+        this.state = {
+            percentage: 50,
+            username: '',
+            recBooks: [],
+            recBooks_mostrados: [],
+            activePage: 1
+        };
+
+        this.handlePageChange = this.handlePageChange.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.requestRecommendation = this.requestRecommendation.bind(this);
+    }
+
+    componentWillMount() {
+        fetch('/user',{
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    this.setState({username: data.username });
+                }
+                else location.href = "/index.html"
+            })
+            .catch(err => console.log(err));
+
+        fetch('/recomendedbooks',{
+            method: 'POST',
+            body: JSON.stringify({ user: this.state.username }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ recBooks: data.array });
+                this.setState({ recBooks_mostrados: this.state.recBooks.slice(0,2) });
+            })
+            .catch(err => console.log(err));
+    }
+
+    handlePageChange(pageNumber) {
+        let item = (pageNumber-1)*2;
+        this.setState({ 
+            activePage: pageNumber,
+            recBooks_mostrados: this.state.recBooks.slice(item, item+2)
+        });
+    }
+
+    handleChange(value) {
+        this.setState({ percentage : value });
+    }
+
+    removeRecommendedBook(isbn) {
+        fetch('/removerecomendedbook',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ recBooks: data.array });
+                this.setState({ recBooks_mostrados: this.state.recBooks.slice(0,2) });
+                this.setState({ activePage: 1 });
+                M.toast({ html: 'Libro eliminado de la lista de recomendados'});
+            })
+            .catch(err => console.log(err));
+    }
+
+    addPendingBook(isbn) {
+        fetch('/removerecomendedbook',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                this.setState({ recBooks: data.array });
+                this.setState({ recBooks_mostrados: this.state.recBooks.slice(0,2) });
+                this.setState({ activePage: 1 });
+
+                fetch('/newpendingbook',{
+                    method: 'POST',
+                    body: JSON.stringify({ isbn: isbn }),
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        M.toast({ html: 'Libro añadido como pendiente'});
+                    })
+                    .catch(err => console.log(err));
+            })
+            .catch(err => console.log(err));
+        
+    }
+
     requestRecommendation() {
+        M.toast({'html': this.state.percentage });
         M.toast({'html': 'Recomendación solicitada'});
-    }
-
-    seeBookDetails() {
-
-    }
-
-    removeRecommendedBook() {
-
     }
 
     render() {
@@ -24,39 +133,44 @@ class RecommendedBooks extends Component {
                 
                 <h3 className="center-align">Mis libros recomendados</h3>
                 
-                <div className="row">
-                    <div className="col s8 offset-s2 card orange lighten-2">
-                        <p>
-                            La Mare Balena
-                            <div className="right">
-                                <a onClick={this.seeBookDetails} className="tooltipped" data-position="left" data-delay="50" data-tooltip="Más detalle del libro"><i class="material-icons">add</i></a>
-                                &nbsp; &nbsp; &nbsp; &nbsp;
-                                <a onClick={this.removeRecommendedBook} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Quitar libro recomendado"><i class="material-icons">remove</i></a>
+                {
+                    this.state.recBooks_mostrados.map((p) => {
+                        return (
+                            <div className="row" key={p.isbn}>
+                                <div className="col s8 offset-s2 card orange lighten-2">
+                                    <p>
+                                        {p.title} - {p.isbn}
+                                        &nbsp;
+                                        <div className="right">
+                                            <a onClick={() => location.href = "/book_details.html?isbn=" + p.isbn } data-tip="Más detalles del libro"><i className="material-icons">search</i></a>
+                                            <ReactTooltip place="left" type="dark" effect="solid"/>
+                                            &nbsp; &nbsp; &nbsp; &nbsp;
+                                            <a onClick={() => this.removeRecommendedBook(p.isbn)} data-tip="Quitar libro recomendado"><i className="material-icons">remove</i></a>
+                                            &nbsp; &nbsp; &nbsp; &nbsp;
+                                            <a onClick={() => this.addPendingBook(p.isbn)} data-tip="Añadir libro como pendiente"><i className="material-icons">add</i></a>
+                                        </div>
+                                    </p>  
+                                </div>
                             </div>
-                        </p>  
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col s8 offset-s2 card orange lighten-2">
-                        <p>
-                            El Capitán Veneno
-                            <div className="right">
-                                <a onClick={this.seeBookDetails} className="tooltipped" data-position="left" data-delay="50" data-tooltip="Más detalle del libro"><i class="material-icons">add</i></a>
-                                &nbsp; &nbsp; &nbsp; &nbsp;
-                                <a onClick={this.removeRecommendedBook} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Quitar libro recomendado"><i class="material-icons">remove</i></a>
+                        )
+                    })
+                }
+                    
+                {(() => {
+                    if(this.state.recBooks.length > 0) {
+                        return (
+                            <div className="row center-align">
+                                <Pagination
+                                    activePage={this.state.activePage}
+                                    itemsCountPerPage={2}
+                                    totalItemsCount={this.state.recBooks.length}
+                                    pageRangeDisplayed={(this.state.recBooks.length / 2) +1}
+                                    onChange={this.handlePageChange}
+                                />
                             </div>
-                        </p>  
-                    </div>
-                </div>
-
-                <div className="row">
-                    <ul class="pagination center-align">
-                        <li class="disabled"><a className="tooltipped" data-position="left" data-delay="50" data-tooltip="Página Anterior"><i class="material-icons">chevron_left</i></a></li>
-                        <li class="waves-effect"><a>1</a></li>
-                        <li class="waves-effect"><a className="tooltipped" data-position="right" data-delay="50" data-tooltip="Página Siguiente"><i class="material-icons">chevron_right</i></a></li>
-                    </ul>
-                </div>
+                        )
+                    }
+                })()}
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
@@ -66,9 +180,7 @@ class RecommendedBooks extends Component {
                                 <div id="normal" className="row">
                                     <p className="col s2 offset-s1">Valoraciones</p>
                                     <div className="col s6">
-                                        <p class="range-field">
-                                            <input type="range" id="barra" min="0" max="100" />
-                                        </p>
+                                        <Slider min={0} max={100} value={this.state.percentage} onChange={this.handleChange} />
                                     </div>
                                     <p className="col s2">&nbsp; &nbsp; &nbsp; Comentarios</p>
                                 </div> 
@@ -76,9 +188,9 @@ class RecommendedBooks extends Component {
                                 <div id="responsive" className="row">
                                     <p className="row center-align">Valoraciones</p>
                                     <div className="row">
-                                        <p class="col s6 offset-s3 range-field center-align">
-                                            <input type="range" id="barra" min="0" max="100" />
-                                        </p>
+                                        <div className="col s8 offset-s2">
+                                            <Slider min={0} max={100} value={this.state.percentage} onChange={this.handleChange} />
+                                        </div>
                                     </div>
                                     <p className="row center-align">Comentarios</p>
                                 </div> 
@@ -91,11 +203,9 @@ class RecommendedBooks extends Component {
                                     </div>
                                 </div>
                             </form>
-                            
                         </div>
                     </div>
                 </div>
-
 
                 <Footer/>
             </div>

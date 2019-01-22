@@ -402,14 +402,35 @@ router.post('/canvalorate', async (req,res) => {
     var user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: b._id}} });
     
     if(user == null) res.json({ canvalorate: false });
-    else res.json({ canvalorate: true });
+    else {
+        // Compruebo si el usuario ya ha valorado ese libro
+        user = await User.findOne({ username: req.session.username });
+        var val = await Valoration.findOne({ book: b._id, user: user._id });
+        
+        if(val == null) res.json({ canvalorate: true });
+        else res.json({ canvalorate: false });
+    }
 });
 
 router.post('/valorations', async (req,res) => {
     const array = [];
 
-    var book = await Book.findOne({isbn: req.body.isbn });
-    var valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    var valorations, numValorations;
+    // Distingo para obtener las valoraciones de un libro o de un usuario
+    if(req.body.isbn == null) {
+        var user = await User.findOne({ username: req.session.username });
+        valorations = await Valoration.find({ user: user._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+   
+        // Cuento el número de valoraciones totales
+        numValorations = await Valoration.find({ user: user._id }).countDocuments();
+    }
+    else {
+        var book = await Book.findOne({isbn: req.body.isbn });
+        valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+        // Cuento el número de valoraciones totales
+        numValorations = await Valoration.find({ book: book._id }).countDocuments();
+    }
 
     for(let i in valorations) {
         // Obtengo fecha
@@ -420,6 +441,9 @@ router.post('/valorations', async (req,res) => {
         // Obtengo usuario
         const user = await User.findById(valorations[i].user);
 
+        // Obtengo libro 
+        const book = await Book.findById(valorations[i].book);
+
         array.push({ 
             id: valorations[i]._id, 
             fecha: date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear(), 
@@ -428,14 +452,81 @@ router.post('/valorations', async (req,res) => {
             description: valorations[i].description,
             user: user.username,
             likes: valorations[i].likes.length,
-            dislikes: valorations[i].dislikes.length
+            dislikes: valorations[i].dislikes.length,
+            book: book.title
         });
     }
 
-    // Cuento el número de valoraciones totales
-    const numValorations = await Valoration.find({ book: book._id }).countDocuments();
-
     res.json({ array: array, countValorations: numValorations });
+});
+
+router.post('/recomendedbooks', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: req.session.username }); 
+
+    for(let i in user.recomended_books) {
+        var book = await Book.findOne({ _id: user.recomended_books[i]._id});
+
+        if(book != null) {
+            array.push({ 
+                isbn: book.isbn,
+                title: book.title
+            });
+        }
+    }
+
+    res.json({ array: array });
+});
+
+router.post('/removerecomendedbook', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: req.session.username }); 
+    var b = await Book.findOne({ isbn: req.body.isbn });
+
+    let pos;
+
+    for(let i in user.recomended_books) {
+        var book = await Book.findOne({ _id: user.recomended_books[i]._id});
+
+        if(book != null) {
+            if(b.isbn == book.isbn) pos = i;
+            else {
+                array.push({ 
+                    isbn: book.isbn,
+                    title: book.title
+                });
+            }
+        }
+    }
+
+    user.recomended_books.splice(pos,1);
+    await user.save();
+
+    res.json({ array: array });
+});
+
+router.post('/readedbooks', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: req.session.username }); 
+
+    for(let i in user.readed_books) {
+        var book = await Book.findOne({ _id: user.readed_books[i]._id});
+
+        if(book != null) {
+            var valoracion = await Valoration.findOne({ book: book._id, user: user._id });
+
+            array.push({ 
+                isbn: book.isbn,
+                title: book.title, 
+                valorado: valoracion == null ? false : true
+            });
+        }
+    }
+
+    res.json({ array: array });
 });
 
 router.post('/pendingbooks', async (req,res) => {

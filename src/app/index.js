@@ -35,10 +35,9 @@ class Inicio extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) this.setState({username: data.username });
+                this.getThemes();
             })
             .catch(err => console.log(err));
-
-        this.getThemes();
     }
 
     handlePageChange(pageNumber) {
