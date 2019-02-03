@@ -14,7 +14,7 @@ class NewBook extends Component {
           suggestions: [],
           isbn: '',
           title: '',
-          author: '',
+          chips_author: [],
           numpages: 0,
           publicationdate: '',
           url: '',
@@ -104,8 +104,10 @@ class NewBook extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) {
+                    this.setState({ isbn: data.isbn});
+
                     // Si se ha introducido la imagen y el titulo, la subo y obtengo su ruta
-                    if(this.state.image && this.state.isbn) this.uploadImage();
+                    if(this.state.image) this.uploadImage();
                     else location.href = "/book_details.html?isbn=" + this.state.isbn;
                 }
                 else {
@@ -133,7 +135,7 @@ class NewBook extends Component {
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="isbn">ISBN</label>
-                                    <input type="number" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
+                                    <input type="text" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Si quiere hacer rellenado automático, introduzca sólo el ISBN del libro, el resto de datos se los intentaremos proporcionar, si no se los podemos proporcionar, rellénelos usted</span>
                                 </div>
                             </div>
@@ -146,9 +148,10 @@ class NewBook extends Component {
                             </div>
                             
                             <div className="row">
-                                <div className="input-field col s12">
-                                    <label htmlFor="author">Autor</label>
-                                    <input type="text" name="author" value={this.state.author} onChange={this.handleChange} /> 
+                                <div className="col s12">
+                                    <label htmlFor="authors">Autores</label> 
+                                    <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
+                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla Tab para almacenarlo.</span>
                                 </div>
                             </div>
 

@@ -13,6 +13,7 @@ class NewSession extends Component {
         }
         this.handleChange = this.handleChange.bind(this);
         this.startSession = this.startSession.bind(this);
+        this.rememberPassword = this.rememberPassword.bind(this);
     }
 
     handleChange(e) {
@@ -53,6 +54,26 @@ class NewSession extends Component {
             })
             .catch(err => console.log(err));
     }
+
+    rememberPassword() {
+        if(this.state.username.length == 0) M.toast({ html: 'Introduzca el nombre del usuario en su campo correspondiente'});
+        else {
+            fetch('/rememberpassword',{
+                method: 'POST',
+                body: JSON.stringify({ username: this.state.username }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.msg.length == 0) M.toast({ html: 'Correo enviado a: ' + data.email});
+                    else M.toast({html: data.msg});
+                })
+                .catch(err => console.log(err));
+        }
+    }
     
     render() {
         return (
@@ -82,6 +103,9 @@ class NewSession extends Component {
                                 Iniciar Sesión
                             </button>
                         </form>
+                        <div className="row">
+                            <a className="right" onClick={this.rememberPassword}>Se me ha olvidado la contraseña</a>
+                        </div>
                     </div>
                 </div>
                 

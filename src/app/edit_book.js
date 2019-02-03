@@ -14,7 +14,7 @@ class EditBook extends Component {
           suggestions: [],
           isbn: '',
           title: '',
-          author: '',
+          chips_author: [],
           url: '',
           numpages: 0,
           publicationdate: '',
@@ -23,7 +23,7 @@ class EditBook extends Component {
           language: '',
           chips_old: [],
           title_old: '',
-          author_old: '',
+          chips_author_old: [],
           url_old: '',
           numpages_old: 0,
           publicationdate_old: '',
@@ -79,7 +79,8 @@ class EditBook extends Component {
                 this.setState({
                     title_old: data.data[0].title,
                     isbn: data.data[0].isbn,
-                    author_old: data.data[0].author,
+                    chips_author_old: data.data[0].authors,
+                    chips_author: data.data[0].authors,
                     numpages_old: data.data[0].numpages,
                     chips_old: data.genres,
                     chips: data.genres
@@ -172,10 +173,10 @@ class EditBook extends Component {
                             </div>
                             
                             <div className="row">
-                                <div className="input-field col s12">
-                                    <label htmlFor="author">Autor</label>
-                                    <input type="text" name="author" className="materialize-textarea" value={this.state.author} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Autor actual: {this.state.author_old}</span>
+                                <div className="col s12">
+                                    <label htmlFor="authors">Autores</label> 
+                                    <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
+                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla Tab para almacenarlo.</span>
                                 </div>
                             </div>
 

@@ -90,11 +90,6 @@ class Perfil extends Component {
             .catch(err => console.log(err));
     }
 
-    unsubscribeUser() {
-        M.toast({html: 'Usuario dado de baja'});
-        {/* Con Express doy la página*/}
-    }
-
     editUser(e) {
         e.preventDefault();
         fetch('/user/profile',{
@@ -186,10 +181,6 @@ class Perfil extends Component {
                             </button>
                         </form>
                     </div>
-                </div>
-
-                <div className="center-align" style={{marginBottom: '4%'}}>
-                    <button type="button" onClick={this.unsubscribeUser} className="waves-effect waves-light btn">Darse de baja</button> 
                 </div>
 
                 <div className="center-align" style={{marginBottom: '4%'}}>

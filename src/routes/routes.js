@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const FileStore = require('express-file-store');
+const fetch = require("node-fetch");
+const nodemailer = require("nodemailer");
 
 // Models
 const Genre = require('../models/genre');
@@ -9,6 +11,7 @@ const User = require('../models/user');
 const Book = require('../models/book');
 const Theme = require('../models/theme');
 const Valoration = require('../models/valoration');
+const Suggestion = require('../models/suggestion');
 
 // Routes
 router.post('/uploadimage', function(req, res) {
@@ -43,8 +46,8 @@ router.post('/book/edit', async (req,res) => {
         // Si se introduce un título distinto, se actualiza
         if(req.body.title.length > 0 && req.body.title != req.body.title_old) book.title = req.body.title;
       
-        // Si se introduce un autor distinto, se actualiza
-        if(req.body.author.length > 0 && req.body.author != req.body.author_old) book.author = req.body.author;
+        // Si se introduce unos autores distintos, se actualizan
+        if(req.body.chips_author.length > 0 && req.body.chips_author != req.body.chips_author_old) book.authors = req.body.chips_author;
 
         // Si se introduce un número de páginas distinto, se actualiza
         if(req.body.numpages.length > 0 && req.body.numpages != req.body.numpages_old) book.numpages = req.body.numpages;
@@ -97,62 +100,160 @@ router.post('/book/edit', async (req,res) => {
 });
 
 router.post('/book/signup', async (req,res) => {
-    if(req.body.isbn.length > 0) { // Comprobar ISBN
+    // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html
+    // Comprobar ISBN-10 o ISBN-13
+    var regex = new RegExp("^(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$");
+    if(regex.test(req.body.isbn)) {
+        var is = req.body.isbn.replace(/-/g,"");
         // Compruebo si existe un libro con ese ISBN
-        const isbn = await Book.find({isbn: req.body.isbn});
+        const isbn = await Book.find({isbn: is});
         if(isbn.length == 0) {
-            if(req.body.title.length > 0) { // Compruebo título
-                if(req.body.author.length > 0) { // Compruebo autor
-                    const libro = new Book(); // Creo libro
-            
-                    // Meto ya los datos obtenidos
-                    libro.isbn = req.body.isbn;
-                    libro.title = req.body.title;
-                    libro.author = req.body.author;
-                    libro.numpages = req.body.numpages;
+        	fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + is,{
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(async data => {
+                    if(data.totalItems == 0) {
+                        if(req.body.chips_author.length == 0 || req.body.title.length == 0) res.json({ msg: 'No se han podido obtener los datos del libro con ese ISBN, por favor introduzcalos'});
+                        else {
+                            const libro = new Book(); // Creo libro
+                
+                            // Meto ya los datos obtenidos
+                            libro.isbn = is;
+                            libro.isbn13 = "";
+                            libro.title = req.body.title;
+                            libro.authors = req.body.chips_author;
+                            libro.numpages = req.body.numpages;
 
-                    // Se inserta la fecha de publicación, si se ha introducido
-                    libro.publicationdate = req.body.publicationdate;
+                            // Se inserta la fecha de publicación, si se ha introducido
+                            libro.publicationdate = req.body.publicationdate;
 
-                    // Se inserta una url de referencia, si se ha introducido
-                    libro.url = req.body.url;
+                            // Se inserta una url de referencia, si se ha introducido
+                            libro.url = req.body.url;
 
-                    // Se inserta la editorial, si se ha introducido
-                    libro.publisher = req.body.publisher;
+                            // Se inserta la editorial, si se ha introducido
+                            libro.publisher = req.body.publisher;
 
-                    // Se inserta el estudio, si se ha introducido
-                    libro.studio = req.body.studio;
+                            // Se inserta el estudio, si se ha introducido
+                            libro.studio = req.body.studio;
 
-                    // Se inserta el idioma, si se ha introducido
-                    libro.language = req.body.language;
+                            // Se inserta el idioma, si se ha introducido
+                            libro.language = req.body.language;
 
-                    // Si se han introducido géneros, se insertan 
-                    if(req.body.chips.length > 0) {
-                        libro.genres = [];
-                        for(let e in req.body.chips) {
-                            const genero = await Genre.find({name: req.body.chips[e]});
-                            if(genero.length > 0) {
-                                // Obtengo id y lo inserto
-                                await libro.genres.push(genero[0]._id);
+                            // Si se han introducido géneros, se insertan 
+                            if(req.body.chips.length > 0) {
+                                libro.genres = [];
+                                for(let e in req.body.chips) {
+                                    const genero = await Genre.find({name: req.body.chips[e]});
+                                    if(genero.length > 0) {
+                                        // Obtengo id y lo inserto
+                                        await libro.genres.push(genero[0]._id);
+                                    }
+                                }
                             }
+
+                            // Si se ha subido una imagen, almaceno su tipo
+                            libro.type = req.body.type;
+
+                            // Guardo el libro
+                            await libro.save();
+
+                            res.json({ msg: '', isbn:is });
                         }
                     }
+                    else {
+                        const libro = new Book(); // Creo libro
+                    
+                        var isb;
 
-                    // Si se ha subido una imagen, almaceno su tipo
-                    libro.type = req.body.type;
+                        // ISBN
+                        if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_10") {
+                            libro.isbn = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
+                            libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
+                            isb = libro.isbn;
+                        }
+                        else {
+                            libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
+                            libro.isbn = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
+                            isb = libro.isbn;
+                        }
 
-                    // Guardo el libro
-                    libro.save();
+                        // Título
+                        libro.title = req.body.title.length > 0 ? req.body.title : data.items[0].volumeInfo.title;
+                                
+                        // Autores
+                        libro.authors = [];
+                        if(req.body.chips_author.length > 0) libro.authors = req.body.chips_author;
+                        else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
+                                
+                        // Número de páginas
+                        libro.numpages = req.body.numpages > 0 ? req.body.numpages : data.items[0].volumeInfo.pageCount;
 
-                    res.json({ msg: '' });
-                }
-                else res.json({ msg: 'Autor no introducido'});
-            }
-            else res.json({ msg: 'Título no introducido'});
+                        // Fecha de publicación
+                        libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
+
+                        // URL
+                        libro.url = req.body.url.length > 0 ? req.body.url : data.items[0].volumeInfo.previewLink;
+
+                        // Editorial
+                        libro.publisher = req.body.publisher.length > 0 ? req.body.publisher : data.items[0].volumeInfo.publisher;
+
+                        // Idioma
+                        libro.language = req.body.language.length > 0 ? req.body.language : data.items[0].volumeInfo.language.toUpperCase();
+
+                        // Estudio
+                        libro.studio = req.body.studio;
+
+                        // Si se han introducido géneros, se insertan 
+                        libro.genres = [];
+                        if(req.body.chips.length > 0) {
+                            for(let e in req.body.chips) {
+                                const genero = await Genre.find({name: req.body.chips[e]});
+                                if(genero.length > 0) {
+                                    // Obtengo id y lo inserto
+                                    await libro.genres.push(genero[0]._id);
+                                }
+                            }
+                        }
+                        else {
+                            for(let i in data.items[0].volumeInfo.categories) {
+                                const genero = await Genre.find({name: data.items[0].volumeInfo.categories[i]});
+                                if(genero.length > 0) {
+                                    // Obtengo id y lo inserto
+                                    await libro.genres.push(genero[0]._id);
+                                }
+                                else {
+                                    // Creo el género
+                                    var g = new Genre();
+                                    g.name = data.items[0].volumeInfo.categories[i];
+
+                                    await g.save();
+
+                                    // Obtengo el id y lo inserto
+                                    const genero = await Genre.find({name: data.items[0].volumeInfo.categories[i]});
+                                    if(genero.length > 0) await libro.genres.push(genero[0]._id);
+                                }
+                            }
+                        }
+
+                        // Si se ha subido una imagen, almaceno su tipo
+                        libro.type = req.body.type;
+                                
+                        // Guardo el libro
+                        await libro.save();
+
+                        res.json({ msg: '', isbn: isb });
+                    }
+                })
+                .catch(err => console.log(err));
         }
         else res.json({ msg: 'El libro con ese ISBN se encuentra ya registrado'});
     }
-    else res.json({ msg: 'ISBN no introducido'});
+    else res.json({ msg: 'ISBN no introducido o no tiene el formato correcto'});
 });
 
 router.get('/users/signout', async (req,res) => {
@@ -414,6 +515,7 @@ router.post('/canvalorate', async (req,res) => {
 
 router.post('/valorations', async (req,res) => {
     const array = [];
+    var num_valo = [];
 
     var valorations, numValorations;
     // Distingo para obtener las valoraciones de un libro o de un usuario
@@ -430,6 +532,8 @@ router.post('/valorations', async (req,res) => {
     
         // Cuento el número de valoraciones totales
         numValorations = await Valoration.find({ book: book._id }).countDocuments();
+
+        for(let i=1;i<=5;i++) num_valo.push(await Valoration.find({ book: book._id, note:i }).countDocuments());
     }
 
     for(let i in valorations) {
@@ -457,7 +561,7 @@ router.post('/valorations', async (req,res) => {
         });
     }
 
-    res.json({ array: array, countValorations: numValorations });
+    res.json({ array: array, countValorations: numValorations, num_valo: num_valo });
 });
 
 router.post('/recomendedbooks', async (req,res) => {
@@ -655,10 +759,27 @@ router.post('/themes', async (req,res) => {
     res.json({ array: array, countThemes: numthemes });
 });
 
+function filtrarAcentos(nombre) {
+    nombre = nombre.replace("á","a");
+    nombre = nombre.replace("é","e");
+    nombre = nombre.replace("í","i");
+    nombre = nombre.replace("ó","o");
+    nombre = nombre.replace("ú","u");
+    nombre = nombre.replace("ü","u");
+    nombre = nombre.replace("Á","A");
+    nombre = nombre.replace("É","E");
+    nombre = nombre.replace("Í","I");
+    nombre = nombre.replace("Ó","O");
+    nombre = nombre.replace("Ú","U");
+    nombre = nombre.replace("Ü","U");
+    return nombre;
+}
+
 router.post('/newgenre', async (req,res) => {
     if(req.body.name.length > 0) { // Compruebo nombre
         // Compruebo si se ha insertado el género
-        const nombre = req.body.name.charAt(0).toUpperCase() + req.body.name.slice(1).toLowerCase();
+        var nombre = req.body.name.charAt(0).toUpperCase() + req.body.name.slice(1).toLowerCase();
+        nombre = filtrarAcentos(nombre);
         const found = await Genre.find({name: nombre});
         if(found.length == 0) {
             const data = { name: nombre };
@@ -732,6 +853,92 @@ router.post('/givelike', async (req,res) => {
 router.get('/genrelist', async (req,res) => {
     const lista = await Genre.find();
     res.json(lista);
+});
+
+router.post('/rememberpassword', async (req,res) => {
+    var user = await User.findOne({ username: req.body.username });
+    if(user == null) res.json({ msg: 'El nombre de usuario introducido no se ha encontrado'});
+    else {
+        // Genero contraseña temporal
+        var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ012346789";
+        var temp_pass = "";
+        for (let i=0; i<9; i++) temp_pass += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
+
+        // Envio email
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com", 
+            auth: {
+              user: 'bookrecommender0@gmail.com', 
+              pass: 'abcd' 
+            }
+        });
+        
+        let mailOptions = {
+            from: '"Book Recommender" <bookrecommender0@gmail.com>', 
+            to: user.email, 
+            subject: "Solicitud recordatorio contraseña", 
+            text: "La contraseña temporal que se le ha asignado es: " + temp_pass + "\nSe le aconseja que vaya a su perfil y cambie la contraseña.\nUn saludo, el equipo de BookRecommender.", 
+        };
+
+        await transporter.sendMail(mailOptions, async (err,data) => {
+            if(err) res.json({ msg: 'Hubo un problema al enviar el mensaje, si persiste este problema, contacte con el administrador'});
+            else {
+                // Cambio la contraseña del usuario
+                user.password = crypto.createHmac('sha1', req.body.username).update(temp_pass).digest('hex');
+                await user.save();
+
+                res.json({ msg: '', email: user.email});
+            }
+        });
+    }
+});
+
+router.post('/suggestion/signup', async (req,res) => {
+    if(req.body.description.length > 0) {
+        var sug = new Suggestion();
+        sug.description = req.body.description;
+
+        if(req.body.username.length > 0) {
+            var user = await User.findOne({ username: req.body.username });
+            
+            if(user != null) sug.user = user._id;
+        }
+        
+        // Guardo la sugerencia
+        await sug.save();
+
+        res.json({ msg: '' });
+    }
+    else res.json({ msg: 'Descripción no introducida'});
+});
+
+router.post('/suggestions', async (req,res) => {
+    var array = [];
+
+    var suggestions = await Suggestion.find().skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+   
+    // Cuento el número de valoraciones totales
+    var numSuggestions = await Suggestion.find().countDocuments();
+
+    for(let i in suggestions) {
+        // Obtengo usuario
+        let user = await User.findById(suggestions[i].user);
+
+        array.push({ 
+            id: suggestions[i]._id, 
+            description: suggestions[i].description,
+            user: user == null ? "Anónimo" : user.username
+        });
+    }
+
+    res.json({ array: array, countSuggestions: numSuggestions });
+});
+
+router.post('/removesuggestion', async (req,res) => {
+    var suggestion = await Suggestion.findByIdAndDelete(req.body.id);
+   
+    if(suggestion == null) res.json({ msg: 'No se ha podido encontrar la sugerencia por lo que se no ha podido eliminar' });
+    else res.json({ msg: 'Sugerencia eliminada' });
 });
 
 module.exports = router;

@@ -4,8 +4,9 @@ const { Schema } = mongoose;
 
 const BookSchema = new Schema({
     isbn: { type:String, required:true, unique:true, trim:true },
+    isbn13: { type:String, trim:true },
     title: { type:String, required:true, trim:true },
-    author: { type:String, required:true, trim:true },
+    authors: [String], 
     numpages: { type:Number },
     publicationdate: { type:Date },
     url: { type:String, trim:true },

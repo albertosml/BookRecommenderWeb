@@ -6,13 +6,13 @@ import Footer from './Footer';
 
 import ReactTooltip from 'react-tooltip';
 import Pagination from 'react-js-pagination';
-import Slider from 'react-rangeslider';
+import MultiSlider from "multi-slider";
 
 class RecommendedBooks extends Component {
     constructor (props, context) {
         super(props, context);
         this.state = {
-            percentage: 50,
+            percentages: [33,34,33],
             username: '',
             recBooks: [],
             recBooks_mostrados: [],
@@ -180,19 +180,24 @@ class RecommendedBooks extends Component {
                                 <div id="normal" className="row">
                                     <p className="col s2 offset-s1">Valoraciones</p>
                                     <div className="col s6">
-                                        <Slider min={0} max={100} value={this.state.percentage} onChange={this.handleChange} />
+                                        <MultiSlider colors={["#FCBD7E", "#EB9F71", "#E6817C"]} values={this.state.percentages} onChange={(p) => this.setState({ percentages: p})} /> 
                                     </div>
-                                    <p className="col s2">&nbsp; &nbsp; &nbsp; Comentarios</p>
+                                    <p className="col s2">Comentarios</p>
+                                    <p className="col s12 center">Géneros</p>
                                 </div> 
+    
 
                                 <div id="responsive" className="row">
-                                    <p className="row center-align">Valoraciones</p>
+                                    <div className="row"> 
+                                        <p className="left">&nbsp; &nbsp; &nbsp; Valoraciones</p>
+                                        <p className="right" style={{marginRight: '7%'}}>Comentarios</p>
+                                    </div>
                                     <div className="row">
                                         <div className="col s8 offset-s2">
-                                            <Slider min={0} max={100} value={this.state.percentage} onChange={this.handleChange} />
+                                            <MultiSlider colors={["#FCBD7E", "#EB9F71", "#E6817C"]} values={this.state.percentages} onChange={(p) => this.setState({ percentages: p})} /> 
                                         </div>
                                     </div>
-                                    <p className="row center-align">Comentarios</p>
+                                    <p className="row center-align">Géneros</p>         
                                 </div> 
                                 
                                 <div className="row">

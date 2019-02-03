@@ -7,6 +7,7 @@ import Footer from './Footer';
 import StarRatings from 'react-star-ratings';
 import Pagination from 'react-js-pagination';
 import ReactTooltip from 'react-tooltip';
+import Chart from "react-google-charts";
 
 class BookDetails extends Component {
     constructor() {
@@ -15,6 +16,8 @@ class BookDetails extends Component {
             rating: 0,
             description: '',
             isbn: '',
+            isbn13: '',
+            isbn10: '',
             titulo: '',
             author: '',
             url: '',
@@ -35,7 +38,9 @@ class BookDetails extends Component {
             response: '',
             temas: [],
             activePageTheme: 1,
-            num_total_temas: 1
+            num_total_temas: 1,
+            media: 0,
+            datos_val: []
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -62,20 +67,25 @@ class BookDetails extends Component {
             .then(data => { 
                 if(data.data == undefined) location.href = '/index.html';
 
+                if(data.data[0].publicationdate == undefined) this.setState({ publicationdate: "" });
+                else if(data.data[0].publicationdate.includes("T")) this.setState({ publicationdate: data.data[0].publicationdate.split("T")[0] });
+                else this.setState({ publicationdate: data.data[0].publicationdate }); 
+
                 this.setState({
                     titulo: data.data[0].title,
                     isbn: data.data[0].isbn,
-                    author: data.data[0].author,
+                    isbn10: data.data[0].isbn.length == 10 ? data.data[0].isbn : "",
+                    isbn13: data.data[0].isbn.length == 13 ? data.data[0].isbn : data.data[0].isbn13,
+                    author: data.data[0].authors,
                     numpages: data.data[0].numpages,
                     genres: data.genres,
-                    type: data.data[0].type
+                    type: data.data[0].type,
+                    url: data.data[0].url,
+                    publisher: data.data[0].publisher == undefined ? "" : data.data[0].publisher,
+                    studio: data.data[0].studio,
+                    language: data.data[0].language
                 });
 
-                if(data.data[0].publicationdate != undefined) this.setState({ publicationdate: data.data[0].publicationdate });
-                if(data.data[0].url.length > 0) this.setState({ url: data.data[0].url });
-                if(data.data[0].publisher.length > 0) this.setState({ publisher: data.data[0].publisher });
-                if(data.data[0].studio.length > 0) this.setState({ studio: data.data[0].studio });
-                if(data.data[0].language.length > 0) this.setState({ language: data.data[0].language });
             })  
         .catch(err => console.log(err));
 
@@ -180,7 +190,21 @@ class BookDetails extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                this.setState({ valoraciones: data.array, num_total_valoraciones: data.countValorations  });
+                if(data.countValorations > 0) {
+                    // Media
+                    var m = 0;
+
+                    // Datos de las valoraciones
+                    var datos = [ ['Nota', 'Número de valoraciones'] ];
+
+                    for(let i=1;i<=5;i++) {
+                        m += data.num_valo[i-1] * i;
+                        datos.push([i.toString(), data.num_valo[i-1]]);
+                    }
+
+                    this.setState({ valoraciones: data.array, num_total_valoraciones: data.countValorations, media: Math.round((m/data.countValorations)*100)/100, datos_val:datos });
+                }
+                else this.setState({ valoraciones: data.array, num_total_valoraciones: data.countValorations });
             })
             .catch(err => console.log(err));
     }
@@ -322,7 +346,9 @@ class BookDetails extends Component {
                                 }
                             })()}
                             &nbsp; &nbsp; &nbsp;
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: " + this.state.isbn + "\n - Autor: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate.split("T")[0] + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                            &nbsp; &nbsp; &nbsp;
+                            <a className="btn waves-effect waves-light" href={this.state.url}>Ver más detalles del libro</a>
                         </div>
                     </div>
                 </div>
@@ -343,7 +369,10 @@ class BookDetails extends Component {
                             <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
                         </div>
                         <div className="row center-align">
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN: " + this.state.isbn + "\n - Autor: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate.split("T")[0] + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                        </div>
+                        <div className="row center-align">
+                            <a className="btn waves-effect waves-light" href={this.state.url}>Ver más detalles del libro</a>
                         </div>
                 </div>
 
@@ -485,6 +514,19 @@ class BookDetails extends Component {
 
                     </div>
                     <div id="valoraciones" className="col s10 offset-s1 green"  style={{marginTop:"1%"}}>
+                        
+                        {(() => {
+                            if(this.state.media > 0) {
+                                /*width={'80%'} height={'300px'}*/
+                                return (
+                                    <Chart style={{margin:'2% auto'}} chartType="Bar" data={this.state.datos_val}
+                                           options={{ chart: { title: 'Valoraciones libro: ' + this.state.titulo, subtitle: 'Nota media de las valoraciones: ' + 
+                                           this.state.media } }} />
+                                )
+                                
+                            }
+                        })()}
+
                         {
                             this.state.valoraciones.map((valoracion) => {
                                 return (
