@@ -8,7 +8,6 @@ const UserSchema = new Schema({
     name: { type:String, required:true, trim:true },
     surname: { type:String, required:true, trim:true },
     email: { type:String, required:true, trim:true },
-    active: { type:Boolean, default:true }, 
     favouritesgenres: [
         { genre: { type:Schema.Types.ObjectId, ref:'Favourite Genre' } }
     ],
