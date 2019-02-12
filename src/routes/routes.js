@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const FileStore = require('express-file-store');
 const fetch = require("node-fetch");
 const nodemailer = require("nodemailer");
 
@@ -14,15 +13,6 @@ const Valoration = require('../models/valoration');
 const Suggestion = require('../models/suggestion');
 
 // Routes
-router.post('/uploadimage', function(req, res) {
-    // Subir imagen
-    req.files.image.mv('src/public/images/books/' + req.files.image.name, function(err) {
-        if(err) return res.json({ msg: ''});
-    });
-
-    res.json({ msg: req.files.image.name});
-});
-
 router.post('/book/data', async(req, res) => {
     const book = await Book.find({isbn: req.body.isbn});
 
@@ -79,18 +69,8 @@ router.post('/book/edit', async (req,res) => {
             }
         }        
         
-        // Si se modificado el tipo de imagen, se actualiza
-        if(req.body.type.length > 0 && req.body.type != req.body.type_old) {
-            book.type = req.body.type;
-
-            // Elimino imagen antigua
-            var fileStore = FileStore('fs', {
-                path: __dirname.split("routes")[0] + 'public'
-            });
-
-            fileStore.remove("/images/books/" + req.body.isbn + "." + req.body.type_old, function(err, file) {    
-            });
-        }
+        // Si se modificado la imagen, se actualiza
+        if(req.body.image != undefined) book.image = req.body.image;
         
         await book.save();
                
@@ -106,7 +86,7 @@ router.post('/book/signup', async (req,res) => {
     if(regex.test(req.body.isbn)) {
         var is = req.body.isbn.replace(/-/g,"");
         // Compruebo si existe un libro con ese ISBN
-        const isbn = await Book.find({isbn: is});
+        const isbn = await Book.find({ $or : [ {isbn: is}, {isbn13: is} ] });
         if(isbn.length == 0) {
         	fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + is,{
                 method: 'GET',
@@ -156,13 +136,13 @@ router.post('/book/signup', async (req,res) => {
                                 }
                             }
 
-                            // Si se ha subido una imagen, almaceno su tipo
-                            libro.type = req.body.type;
+                            // Si se ha subido una imagen, la almaceno
+                            libro.image = req.body.image;
 
                             // Guardo el libro
                             await libro.save();
 
-                            res.json({ msg: '', isbn:is });
+                            res.json({ isbn:is, msg: '' });
                         }
                     }
                     else {
@@ -176,9 +156,13 @@ router.post('/book/signup', async (req,res) => {
                             libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
                             isb = libro.isbn;
                         }
-                        else {
+                        else if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_13") {
                             libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
                             libro.isbn = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
+                            isb = libro.isbn;
+                        }
+                        else {
+                            libro.isbn = is;
                             isb = libro.isbn;
                         }
 
@@ -191,7 +175,7 @@ router.post('/book/signup', async (req,res) => {
                         else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
                                 
                         // Número de páginas
-                        libro.numpages = req.body.numpages > 0 ? req.body.numpages : data.items[0].volumeInfo.pageCount;
+                        libro.numpages = req.body.numpages != undefined ? req.body.numpages : data.items[0].volumeInfo.pageCount;
 
                         // Fecha de publicación
                         libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
@@ -240,20 +224,20 @@ router.post('/book/signup', async (req,res) => {
                             }
                         }
 
-                        // Si se ha subido una imagen, almaceno su tipo
-                        libro.type = req.body.type;
+                        // Si se ha subido una imagen, la almaceno
+                        libro.image = req.body.image;
                                 
                         // Guardo el libro
                         await libro.save();
 
-                        res.json({ msg: '', isbn: isb });
+                        res.json({ isbn: isb, msg: '' });
                     }
                 })
                 .catch(err => console.log(err));
         }
-        else res.json({ msg: 'El libro con ese ISBN se encuentra ya registrado'});
+        else res.json({ msg: 'El libro con ese ISBN se encuentra ya registrado' });
     }
-    else res.json({ msg: 'ISBN no introducido o no tiene el formato correcto'});
+    else res.json({ msg: 'ISBN no introducido o no tiene el formato correcto' });
 });
 
 router.get('/users/signout', async (req,res) => {

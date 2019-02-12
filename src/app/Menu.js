@@ -47,7 +47,7 @@ export default class Menu extends Component {
         })
             .then(res => res.json())
             .then(data => { 
-                location.href = "/index.html"
+                location.href = "/index.html";
                 this.forceUpdate();
             })
             .catch(err => console.log(err));

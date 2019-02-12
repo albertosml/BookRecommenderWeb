@@ -22,8 +22,7 @@ class NewBook extends Component {
           studio: '',
           language: '',
           image: null,
-          path: '',
-          type: ''
+          path: ''
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -56,38 +55,22 @@ class NewBook extends Component {
     }
 
     fileSelectedHandle(e) {
-        this.setState({ 
-            image: e.target.files[0],
-            type: e.target.files[0].type.split("/")[1]
-        });
+        // Image
+        var file = document.querySelector('input[type="file"]').files[0];
+        
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = () => this.setState({ image: reader.result });
+
+        // Path 
+        this.setState({ path: e.target.path.value });
     }
 
     handleChange(e) {
         const { name, value } = e.target;
         this.setState({ [name] : value });
-    }
-
-    uploadImage() {
-        const data = new FormData();
-        data.append('image', this.state.image, this.state.isbn + "." + this.state.image.type.split("/")[1]);
-
-        fetch('/uploadimage',{
-            method: 'POST', 
-            body: data
-        })
-            .then(res => res.json())
-            .then(data => {
-                if(data.msg.length == 0) {
-                    M.toast({html: 'Problema al subir la imagen. Inténtelo otra vez'});
-                    this.setState({ 
-                        image: null,
-                        path: '',
-                        type: ''
-                    });
-                }
-                else location.href = "/book_details.html?isbn=" + this.state.isbn;
-            })
-            .catch(err => console.log(err));
+        console.log(this.state.path)
     }
 
     newBook(e) {
@@ -105,19 +88,9 @@ class NewBook extends Component {
             .then(data => {
                 if(data.msg.length == 0) {
                     this.setState({ isbn: data.isbn});
-
-                    // Si se ha introducido la imagen y el titulo, la subo y obtengo su ruta
-                    if(this.state.image) this.uploadImage();
-                    else location.href = "/book_details.html?isbn=" + this.state.isbn;
+                    location.href = "/book_details.html?isbn=" + this.state.isbn;
                 }
-                else {
-                    M.toast({html: data.msg});
-                    this.setState({ 
-                        image: null,
-                        path: '',
-                        type: '' 
-                    });
-                }
+                else M.toast({html: data.msg});
             })
             .catch(err => console.log(err));
     }
@@ -210,12 +183,12 @@ class NewBook extends Component {
                                 <div className="file-field input-field col s12">
                                     <div className="btn">
                                         <span>Archivo</span>
-                                        <input type="file" onChange={this.fileSelectedHandle} accept="image/*"/>
+                                        <input type="file" name="image" onChange={this.fileSelectedHandle} accept="image/*"/>
                                     </div>
                                     <div className="file-path-wrapper">
-                                        <input className="file-path" name="image" value={this.state.path} onChange={this.handleChange} type="text" />
+                                        <input className="file-path" name="path" defaultValue={this.state.path} type="text" />
                                     </div>
-                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, que no tengan derechos de autor; en el caso de que se suba una imagen que no sea libre, la responsabilidad caerá sobre usted.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, que no tengan derechos de autor y, también, que tengan un tamaño menor de 16MB; en el caso de que se suba una imagen que no sea libre, la responsabilidad caerá sobre usted.</span>
                                 </div>
                             </div> 
                             

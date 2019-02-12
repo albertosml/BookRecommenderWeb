@@ -40,7 +40,8 @@ class BookDetails extends Component {
             activePageTheme: 1,
             num_total_temas: 1,
             media: 0,
-            datos_val: []
+            datos_val: [],
+            image: null
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -83,9 +84,9 @@ class BookDetails extends Component {
                     url: data.data[0].url,
                     publisher: data.data[0].publisher == undefined ? "" : data.data[0].publisher,
                     studio: data.data[0].studio,
-                    language: data.data[0].language
+                    language: data.data[0].language,
+                    image: data.data[0].image
                 });
-
             })  
         .catch(err => console.log(err));
 
@@ -325,10 +326,10 @@ class BookDetails extends Component {
         return (
             <div>
                 <Menu/>
-
+                
                 <div id="normal" className="row" style={{marginTop:'2%'}}>
                     <div className="col s4 offset-s2">
-                        <img style={{width:'100px', height:'150px'}} src={"images/books/" + this.state.isbn + "." + this.state.type} alt="No hay imagen" />    
+                        <img style={{width:'100px', height:'150px'}} src={this.state.image} alt="No hay imagen" />    
                     </div>
 
                     <div className="col s6">
@@ -362,15 +363,21 @@ class BookDetails extends Component {
                         </h4>
                     </div>
                         <div className="row center-align">
-                            <img style={{width:'100px', height:'150px', margin: 'auto'}} src={"images/books/" + this.state.isbn + "." + this.state.type} alt="No hay imagen" />
+                            <img style={{width:'100px', height:'150px'}} src={this.state.image} alt="No hay imagen" />    
                         </div>    
 
-                        <div className="row center-align">
-                            <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit" id="buttonPendientes">Agregar a Pendientes</button>
-                        </div>
+                        {(() => {
+                            if(this.state.username.length > 0) {
+                                return (
+                                    <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                )
+                            }
+                        })()}
+
                         <div className="row center-align">
                             <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
+
                         <div className="row center-align">
                             <a className="btn waves-effect waves-light" href={this.state.url}>Ver más detalles del libro</a>
                         </div>
