@@ -69,7 +69,7 @@ class MyValorations extends Component {
                     {
                         this.state.valoraciones.map((valoracion) => {
                             return (
-                                <div className="row">
+                                <div className="row" key={valoracion.id} >
                                     <div className="col s8 offset-s2 card orange lighten-2">
                                         <p className="white-text center-align">{valoracion.book}</p>
 
@@ -87,17 +87,25 @@ class MyValorations extends Component {
                             )
                         })
                     } 
-
-                    <div className="row center-align">
-                        <Pagination
-                            activePage={this.state.activePageValoration}
-                            itemsCountPerPage={2}
-                            totalItemsCount={this.state.num_total_valoraciones}
-                            pageRangeDisplayed={(this.state.num_total_valoraciones / 2) +1}
-                            onChange={this.handlePageChange}
-                        />
-                    </div>
                 </div>
+                             
+                {(() => {
+                    if(this.state.valoraciones.length > 0) {
+                        console.log("jlgrñj");
+                        return (
+                            <div className="row center-align">
+                                <Pagination
+                                    activePage={this.state.activePageValoration}
+                                    itemsCountPerPage={2}
+                                    totalItemsCount={this.state.num_total_valoraciones}
+                                    pageRangeDisplayed={(this.state.num_total_valoraciones / 2) +1}
+                                    onChange={this.handlePageChange}
+                                />
+                            </div>
+                        )
+                    }
+                    else return <h4 className="row center-align green-text" style={{marginBottom: '3%'}}>No ha realizado ninguna valoración</h4>;
+                })()}
 
                 <Footer/>
             </div>

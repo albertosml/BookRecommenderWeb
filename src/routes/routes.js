@@ -60,13 +60,24 @@ router.post('/book/edit', async (req,res) => {
         // Si se ha modificado los géneros, los actualizamos
         if(req.body.chips != req.body.chips_old) {
             book.genres = [];
-            for(let e in req.body.chips) {
-                const genero = await Genre.findOne({name: req.body.chips[e]});
-                if(genero != null) {                        
+            for(let i in req.body.chips) {
+                const genero = await Genre.find({name: req.body.chips[i]});
+                if(genero.length > 0) {
                     // Obtengo id y lo inserto
-                    await book.genres.push(genero._id);
+                    await book.genres.push(genero[0]._id);
                 }
-            }
+                else {
+                    // Creo el género
+                    var g = new Genre();
+                    g.name = req.body.chips[i];
+
+                    await g.save();
+
+                    // Obtengo el id y lo inserto
+                    const genero = await Genre.find({name: req.body.chips[i]});
+                    if(genero.length > 0) await book.genres.push(genero[0]._id);
+                }
+            }        
         }        
         
         // Si se modificado la imagen, se actualiza
@@ -127,13 +138,24 @@ router.post('/book/signup', async (req,res) => {
                             // Si se han introducido géneros, se insertan 
                             if(req.body.chips.length > 0) {
                                 libro.genres = [];
-                                for(let e in req.body.chips) {
-                                    const genero = await Genre.find({name: req.body.chips[e]});
+                                for(let i in req.body.chips) {
+                                    const genero = await Genre.find({name: req.body.chips[i]});
                                     if(genero.length > 0) {
                                         // Obtengo id y lo inserto
                                         await libro.genres.push(genero[0]._id);
                                     }
-                                }
+                                    else {
+                                        // Creo el género
+                                        var g = new Genre();
+                                        g.name = req.body.chips[i];
+        
+                                        await g.save();
+        
+                                        // Obtengo el id y lo inserto
+                                        const genero = await Genre.find({name: req.body.chips[i]});
+                                        if(genero.length > 0) await libro.genres.push(genero[0]._id);
+                                    }
+                                }        
                             }
 
                             // Si se ha subido una imagen, la almaceno
@@ -194,33 +216,27 @@ router.post('/book/signup', async (req,res) => {
 
                         // Si se han introducido géneros, se insertan 
                         libro.genres = [];
-                        if(req.body.chips.length > 0) {
-                            for(let e in req.body.chips) {
-                                const genero = await Genre.find({name: req.body.chips[e]});
-                                if(genero.length > 0) {
-                                    // Obtengo id y lo inserto
-                                    await libro.genres.push(genero[0]._id);
-                                }
+                        
+                        var generos;
+                        if(req.body.chips.length > 0) generos = req.body.chips;
+                        else generos = data.items[0].volumeInfo.categories;
+                            
+                        for(let i in generos) {
+                            const genero = await Genre.find({name: generos[i]});
+                            if(genero.length > 0) {
+                                // Obtengo id y lo inserto
+                                await libro.genres.push(genero[0]._id);
                             }
-                        }
-                        else {
-                            for(let i in data.items[0].volumeInfo.categories) {
-                                const genero = await Genre.find({name: data.items[0].volumeInfo.categories[i]});
-                                if(genero.length > 0) {
-                                    // Obtengo id y lo inserto
-                                    await libro.genres.push(genero[0]._id);
-                                }
-                                else {
-                                    // Creo el género
-                                    var g = new Genre();
-                                    g.name = data.items[0].volumeInfo.categories[i];
+                            else {
+                                // Creo el género
+                                var g = new Genre();
+                                g.name = generos[i];
 
-                                    await g.save();
+                                await g.save();
 
-                                    // Obtengo el id y lo inserto
-                                    const genero = await Genre.find({name: data.items[0].volumeInfo.categories[i]});
-                                    if(genero.length > 0) await libro.genres.push(genero[0]._id);
-                                }
+                                // Obtengo el id y lo inserto
+                                const genero = await Genre.find({name: generos[i]});
+                                if(genero.length > 0) await libro.genres.push(genero[0]._id);
                             }
                         }
 
@@ -314,13 +330,24 @@ router.post('/user/profile', async (req,res) => {
         // Si se ha modificado los géneros, los actualizamos
         if(req.body.chips != req.body.chips_old) {
             user.favouritesgenres = [];
-            for(let e in req.body.chips) {
-                const genero = await Genre.findOne({name: req.body.chips[e]});
-                if(genero != null) {                        
+            for(let i in req.body.chips) {
+                const genero = await Genre.find({name: req.body.chips[i]});
+                if(genero.length > 0) {
                     // Obtengo id y lo inserto
-                    await user.favouritesgenres.push(genero._id);
+                    await user.favouritesgenres.push(genero[0]._id);
                 }
-            }
+                else {
+                    // Creo el género
+                    var g = new Genre();
+                    g.name = req.body.chips[i];
+
+                    await g.save();
+
+                    // Obtengo el id y lo inserto
+                    const genero = await Genre.find({name: req.body.chips[i]});
+                    if(genero.length > 0) await user.favouritesgenres.push(genero[0]._id);
+                }
+            }        
         }                   
         
         await user.save();
@@ -376,15 +403,26 @@ router.post('/users/signup', async (req,res) => {
                                     password: crypto.createHmac('sha1', req.body.username).update(req.body.password).digest('hex')
                                 };
                                 
-                                const usuario = new User(data);
+                                var usuario = new User(data);
 
-                                for(let e in req.body.chips) {
-                                    const genero = await Genre.find({name: req.body.chips[e]});
+                                for(let i in req.body.chips) {
+                                    const genero = await Genre.find({name: req.body.chips[i]});
                                     if(genero.length > 0) {
                                         // Obtengo id y lo inserto
                                         await usuario.favouritesgenres.push(genero[0]._id);
                                     }
-                                }
+                                    else {
+                                        // Creo el género
+                                        var g = new Genre();
+                                        g.name = req.body.chips[i];
+                    
+                                        await g.save();
+                    
+                                        // Obtengo el id y lo inserto
+                                        const genero = await Genre.find({name: req.body.chips[i]});
+                                        if(genero.length > 0) await usuario.favouritesgenres.push(genero[0]._id);
+                                    }
+                                } 
                                 
                                 await usuario.save();
                                 
@@ -923,6 +961,108 @@ router.post('/removesuggestion', async (req,res) => {
    
     if(suggestion == null) res.json({ msg: 'No se ha podido encontrar la sugerencia por lo que se no ha podido eliminar' });
     else res.json({ msg: 'Sugerencia eliminada' });
+});
+
+router.get('/books', async (req,res) => {
+    var array = [];
+
+    var libros = await Book.find(); 
+
+    for(let i in libros) {
+        array.push({ 
+            isbn: libros[i].isbn,
+            title: libros[i].title, 
+        });
+    }
+
+    res.json({ array: array });
+});
+
+router.post('/removebook', async (req,res) => {
+    var array = [];
+
+    // Elimino libro
+    var b = await Book.findOneAndDelete({ isbn: req.body.isbn });
+
+    // Si algún usuario tiene ese libro como pendiente, leído o recomendado, lo elimino
+    var users = await User.find({ pending_books: {$elemMatch: { _id: b._id}} });
+
+    for(let i in users) 
+        for(let j in users[i].pending_books) 
+            if(b._id.equals(users[i].pending_books[j]._id)) {
+                await users[i].pending_books.splice(j,1);
+                await users[i].save();
+                break;
+            }
+    
+    users = await User.find({ readed_books: {$elemMatch: { _id: b._id}} });
+
+    for(let i in users) 
+        for(let j in users[i].readed_books) 
+            if(b._id.equals(users[i].readed_books[j]._id)) {
+                await users[i].readed_books.splice(j,1);
+                await users[i].save();
+                break;
+            }
+
+    users = await User.find({ recommended_books: {$elemMatch: { _id: b._id}} });
+
+    for(let i in users) 
+        for(let j in users[i].recommended_books) 
+            if(b._id.equals(users[i].recommended_books[j]._id)) {
+                await users[i].recommended_books.splice(j,1);
+                await users[i].save();
+                break;
+            }
+
+    // Elimino los temas de ese libro
+    await Theme.deleteMany({ book: b._id });
+
+    // Elimino las valoraciones de ese libro
+    await Valoration.deleteMany({ book: b._id });
+
+    var books = await Book.find();
+
+    for(let i in books) {
+        array.push({
+            isbn: books[i].isbn,
+            title: books[i].title
+        });
+    }
+
+    res.json({ array: array });
+});
+
+router.post('/removegenre', async (req,res) => {
+    // Elimino género
+    var g = await Genre.findOneAndDelete({ name: req.body.name });
+
+    // Si algún usuario tiene ese género como favorito, se elimina de su lista
+    var users = await User.find({ favouritesgenres: {$elemMatch: { _id: g._id}} });
+
+    for(let i in users) 
+        for(let j in users[i].favouritesgenres) 
+            if(g._id.equals(users[i].favouritesgenres[j]._id)) {
+                await users[i].favouritesgenres.splice(j,1);
+                await users[i].save();
+                break;
+            }
+    
+    // Si ese género pertenece a algún libro se elimina de su lista
+    var books = await Book.find({ genres: {$elemMatch: { _id: g._id}} });
+
+    for(let i in books) 
+        for(let j in books[i].genres) 
+            if(g._id.equals(books[i].genres[j]._id)) {
+                await books[i].genres.splice(j,1);
+                await books[i].save();
+                break;
+            }
+
+    // Obtengo los géneros no eliminados
+    genres = await Genre.find();
+
+    res.json(genres);
 });
 
 module.exports = router;

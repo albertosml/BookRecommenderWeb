@@ -443,7 +443,7 @@ class BookDetails extends Component {
                                             </div>
 
                                             {(() => {
-                                                if(this.state.username.length > 0) {
+                                                if(this.state.username.length > 0 && this.state.username != "admin") {
                                                     return (
                                                         <div className="col s10 offset-s1 card light-green lighten-3">
                                                             <p className="center"><strong>Comentario</strong></p>
@@ -489,7 +489,7 @@ class BookDetails extends Component {
                         })()}
 
                         {(() => {
-                            if(this.state.username.length > 0) {
+                            if(this.state.username.length > 0 && this.state.username != "admin") {
                                 return (
                                     <div className="row">
                                         <div className="col s8 offset-s2 card light-green lighten-3">
@@ -524,13 +524,11 @@ class BookDetails extends Component {
                         
                         {(() => {
                             if(this.state.media > 0) {
-                                /*width={'80%'} height={'300px'}*/
                                 return (
                                     <Chart style={{margin:'2% auto'}} chartType="Bar" data={this.state.datos_val}
                                            options={{ chart: { title: 'Valoraciones libro: ' + this.state.titulo, subtitle: 'Nota media de las valoraciones: ' + 
                                            this.state.media } }} />
                                 )
-                                
                             }
                         })()}
 
@@ -550,7 +548,7 @@ class BookDetails extends Component {
                                             <p>&nbsp; &nbsp; &nbsp; &nbsp;<strong>Nota:</strong> &nbsp; <StarRatings rating={valoracion.note} starRatedColor="yellow" starDimension="20px" starSpacing="5px"/></p>
 
                                             {(() => {
-                                                if(this.state.username.length > 0) {
+                                                if(this.state.username.length > 0 && this.state.username != "admin") {
                                                     return (
                                                         <div>
                                                             <a style={{color: 'black'}} onClick={() => this.addLike(valoracion.id)} data-tip="De 'Me gusta' a esta valoración" className="left btn waves-effect waves-light light-green lighten-4">
@@ -591,7 +589,7 @@ class BookDetails extends Component {
                         })()}
                             
                         {(() => {
-                            if(this.state.username.length > 0 && this.state.puede_valorar) {
+                            if(this.state.username.length > 0 && this.state.puede_valorar && this.state.username != "admin") {
                                 return (
                                     <div className="col s8 offset-s2 card light-green lighten-3">
                                         <p className="center"><strong>Valoración</strong></p>

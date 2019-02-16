@@ -170,6 +170,7 @@ class RecommendedBooks extends Component {
                             </div>
                         )
                     }
+                    else return <h4 className="row center-align green-text" style={{marginBottom: '3%'}}>No tiene libros recomendados</h4>;
                 })()}
                 
                 <div className="row">

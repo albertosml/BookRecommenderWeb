@@ -72,7 +72,12 @@ class NewUser extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                if(data.msg.length == 0) location.href = 'index.html';
+                if(data.msg.length == 0) {
+                    M.toast({ html: 'Usuario registrado con éxito' });
+
+                    // Espera a la redirección para que se vea el mensaje de arriba
+                    setTimeout(() => location.href = 'index.html', 1000);
+                }
                 else M.toast({html: data.msg});
             })
             .catch(err => console.log(err));
@@ -150,10 +155,6 @@ class NewUser extends Component {
                             </button>
                         </form>
                     </div>
-                </div>
-
-                <div className="center-align" style={{marginBottom: '4%'}}>
-                    <a className="waves-effect waves-light btn" href="add_genre.html">Añadir nuevo género</a>
                 </div>
                 
                 <Footer/>

@@ -155,6 +155,7 @@ class PendingBooks extends Component {
                             </div>
                         )
                     }
+                    else return <h4 className="row center-align green-text" style={{marginBottom: '3%'}}>No tiene libros pendientes</h4>;
                 })()}
 
                 <Footer/>

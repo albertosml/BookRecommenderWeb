@@ -120,7 +120,7 @@ class Inicio extends Component {
     render() {
         let theme_form;
 
-        if(this.state.username.length > 0) {
+        if(this.state.username.length > 0 && this.state.username != "admin") {
             theme_form = <div className="row">
                             <div className="col s8 offset-s2 card light-green lighten-3">
                                 <p className="center"><strong>Nuevo Tema</strong></p>
@@ -203,7 +203,7 @@ class Inicio extends Component {
                                     </div>
 
                                     {(() => {
-                                        if(this.state.username.length > 0) {
+                                        if(this.state.username.length > 0  && this.state.username != "admin") {
                                             return (
                                                 <div className="col s10 offset-s1 card light-green lighten-3">
                                                     <p className="center"><strong>Comentario</strong></p>
@@ -231,16 +231,23 @@ class Inicio extends Component {
                     }
                 </div>
 
-                <div className="row center-align">
-                    <Pagination
-                        activePage={this.state.activePageTheme}
-                        itemsCountPerPage={2}
-                        totalItemsCount={this.state.num_total_temas}
-                        pageRangeDisplayed={(this.state.num_total_temas / 2) +1}
-                        onChange={this.handlePageChange}
-                    />
-                </div>
-                    
+                {(() => {
+                    if(this.state.num_total_temas > 0) {
+                        return (
+                            <div className="row center-align">
+                                <Pagination
+                                    activePage={this.state.activePageTheme}
+                                    itemsCountPerPage={2}
+                                    totalItemsCount={this.state.num_total_temas}
+                                    pageRangeDisplayed={(this.state.num_total_temas / 2) +1}
+                                    onChange={this.handlePageChange}
+                                />
+                            </div>
+                        )
+                    }
+                    else return <h4 className="row center-align green-text" style={{marginBottom: '3%'}}>No hay temas disponibles</h4>;
+                })()}
+
                 { theme_form }
 
                 <Footer/>

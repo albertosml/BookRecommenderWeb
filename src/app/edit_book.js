@@ -232,10 +232,6 @@ class EditBook extends Component {
                     </div>
                 </div>
 
-                <div className="center-align" style={{marginBottom: '4%'}}>
-                    <a className="waves-effect waves-light btn" href="add_genre.html">Añadir nuevo género</a>
-                </div>
-                
                 <Footer/>
             </div>
         )

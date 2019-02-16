@@ -76,8 +76,24 @@ export default class Menu extends Component {
                                     </div>
                                 </li>
         
+                                <li><a href="profile.html"><i className="material-icons">perm_identity</i>Perfil</a></li>
                                 <li><a href="suggestions.html"><i className="material-icons">remove_red_eye</i>Ver Sugerencias</a></li>
-                                <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
+                                <li><a href="books.html"><i className="material-icons">remove_red_eye</i>Ver Libros</a></li>
+                                <li><a href="genres.html"><i className="material-icons">remove_red_eye</i>Ver Géneros</a></li>
+                                <li><div className="divider"></div></li>
+                                <li>
+                                    <div className="center">
+                                        <MuiThemeProvider>
+                                            <AutoComplete hintText="Buscar libro..." dataSource={this.state.options} dataSourceConfig={{ text: 'label', value: 'label' }}
+                                                          onUpdateInput={(value) => this.setState({ value: value.split(" - ")[1] })} 
+                                                          filter={(searchText, key) => {return searchText.toUpperCase() !== '' && key.toUpperCase().indexOf(searchText.toUpperCase()) !== -1;}}  />
+                                        </MuiThemeProvider>
+                                    </div>
+                                    <div className="center">
+                                        <button className="btn" onClick={() => { if(this.state.value.match("[0-9]+")) location.href = "/book_details.html?isbn=" + this.state.value }}><i className="material-icons">search</i></button> 
+                                    </div>
+                                </li>
+                                <li><div className="divider"></div></li>
                             </ul>
                         )
                     }
@@ -95,6 +111,7 @@ export default class Menu extends Component {
                                 <li><a href="profile.html"><i className="material-icons">perm_identity</i>Perfil</a></li>
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
+                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Añadir/Consultar géneros</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">
@@ -130,6 +147,7 @@ export default class Menu extends Component {
                                 <li><a href="user_registration.html"><i className="material-icons">perm_identity</i>Registrar Usuario</a></li>
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
+                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Añadir/Consultar géneros</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">

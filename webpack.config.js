@@ -16,7 +16,9 @@ module.exports = {
         detalles_libro: './src/app/book_details.js',
         anadir_genero: './src/app/add_genre.js',
         nueva_sugerencia: './src/app/new_suggestion.js',
-        sugerencias: './src/app/suggestions.js'
+        sugerencias: './src/app/suggestions.js',
+        libros: './src/app/books.js',
+        generos: './src/app/genres.js'
     },
     output: {
         path: __dirname + '/src/public',

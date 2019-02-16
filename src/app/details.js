@@ -16,7 +16,8 @@ class Detalles extends Component {
                     <div className="col s5 offset-s1">
                         <p><strong>Nombre:</strong> Alberto Silvestre Montes Linares</p>
                         <p><strong>Correo:</strong> albertosml@correo.ugr.es / bookrecommender0@gmail.com</p>
-                        <p><strong>Cuenta de Github:</strong> albertosml</p>    
+                        <p><strong>Cuenta de Github:</strong> albertosml</p> 
+                        <p><strong>Tutor del proyecto:</strong> Juan Manuel Fernández Luna</p>   
                     </div>
                     <img className="col s3 offset-s1 circle responsive-img" src="images/albertosml.png" />
                 </div>
