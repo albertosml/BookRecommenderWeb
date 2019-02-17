@@ -891,7 +891,7 @@ router.post('/rememberpassword', async (req,res) => {
             host: "smtp.gmail.com", 
             auth: {
               user: 'bookrecommender0@gmail.com', 
-              pass: 'QdYJDYCcUe' 
+              pass: 'abc' 
             }
         });
         
