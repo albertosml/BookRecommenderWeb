@@ -19,7 +19,6 @@ class NewBook extends Component {
           publicationdate: '',
           url: '',
           publisher: '',
-          studio: '',
           language: '',
           image: null,
           path: ''
@@ -153,13 +152,6 @@ class NewBook extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="publisher">Editorial</label> 
                                     <input type="text" name="publisher" value={this.state.publisher} onChange={this.handleChange} /> 
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <label htmlFor="studio">Estudio</label> 
-                                    <input type="text" name="studio" value={this.state.studio} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 

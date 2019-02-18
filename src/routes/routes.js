@@ -51,9 +51,6 @@ router.post('/book/edit', async (req,res) => {
         // Si se introduce una editorial distinta, se actualiza
         if(req.body.publisher.length > 0 && req.body.publisher != req.body.publisher_old) book.publisher = req.body.publisher;
 
-        // Si se introduce un estudio distinto, se actualiza
-        if(req.body.studio.length > 0 && req.body.studio != req.body.studio_old) book.studio = req.body.studio;
-
         // Si se introduce un idioma distinto, se actualiza
         if(req.body.language.length > 0 && req.body.language != req.body.language_old) book.language = req.body.language;
 
@@ -128,9 +125,6 @@ router.post('/book/signup', async (req,res) => {
 
                             // Se inserta la editorial, si se ha introducido
                             libro.publisher = req.body.publisher;
-
-                            // Se inserta el estudio, si se ha introducido
-                            libro.studio = req.body.studio;
 
                             // Se inserta el idioma, si se ha introducido
                             libro.language = req.body.language;
@@ -210,9 +204,6 @@ router.post('/book/signup', async (req,res) => {
 
                         // Idioma
                         libro.language = req.body.language.length > 0 ? req.body.language : data.items[0].volumeInfo.language.toUpperCase();
-
-                        // Estudio
-                        libro.studio = req.body.studio;
 
                         // Si se han introducido géneros, se insertan 
                         libro.genres = [];
@@ -891,7 +882,7 @@ router.post('/rememberpassword', async (req,res) => {
             host: "smtp.gmail.com", 
             auth: {
               user: 'bookrecommender0@gmail.com', 
-              pass: 'abc' 
+              pass: 'QdYJDYCcUe' 
             }
         });
         
@@ -937,10 +928,11 @@ router.post('/suggestion/signup', async (req,res) => {
 router.post('/suggestions', async (req,res) => {
     var array = [];
 
-    var suggestions = await Suggestion.find().skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    var user = await User.findOne({ username: "admin" });
+    var suggestions = await Suggestion.find({ user: { $not: { $eq: user._id } } }).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
    
     // Cuento el número de valoraciones totales
-    var numSuggestions = await Suggestion.find().countDocuments();
+    var numSuggestions = await Suggestion.find().countDocuments({ user: { $not: { $eq: user._id } } });
 
     for(let i in suggestions) {
         // Obtengo usuario
@@ -960,7 +952,7 @@ router.post('/removesuggestion', async (req,res) => {
     var suggestion = await Suggestion.findByIdAndDelete(req.body.id);
    
     if(suggestion == null) res.json({ msg: 'No se ha podido encontrar la sugerencia por lo que se no ha podido eliminar' });
-    else res.json({ msg: 'Sugerencia eliminada' });
+    else res.json({ msg: ''});
 });
 
 router.get('/books', async (req,res) => {
@@ -1063,6 +1055,55 @@ router.post('/removegenre', async (req,res) => {
     genres = await Genre.find();
 
     res.json(genres);
+});
+
+router.get('/news', async (req,res) => {
+    var array = [];
+
+    var user = await User.findOne({ username: "admin" });
+    var suggestions = await Suggestion.find({ user: user._id });
+   
+    // Cuento el número de valoraciones totales
+    var numSuggestions = await Suggestion.find({ user: user._id }).countDocuments();
+
+    for(let i in suggestions) {
+        // Obtengo usuario
+        let user = await User.findById(suggestions[i].user);
+
+        array.push({ 
+            id: suggestions[i]._id, 
+            description: suggestions[i].description
+        });
+    }
+
+    res.json({ array: array.reverse(), countSuggestions: numSuggestions });
+});
+
+router.post('/removenews', async (req,res) => {
+    var suggestion = await Suggestion.findByIdAndDelete(req.body.id);
+   
+    if(suggestion == null) res.json({ msg: 'No se ha podido encontrar la sugerencia por lo que se no ha podido eliminar' });
+    else {
+        var array = [];
+
+        var user = await User.findOne({ username: "admin" });
+        var suggestions = await Suggestion.find({ user: user._id });
+    
+        // Cuento el número de valoraciones totales
+        var numSuggestions = await Suggestion.find({ user: user._id }).countDocuments();
+
+        for(let i in suggestions) {
+            // Obtengo usuario
+            let user = await User.findById(suggestions[i].user);
+
+            array.push({ 
+                id: suggestions[i]._id, 
+                description: suggestions[i].description
+            });
+        }
+
+        res.json({ msg: '', array: array.reverse(), countSuggestions: numSuggestions });
+    }
 });
 
 module.exports = router;

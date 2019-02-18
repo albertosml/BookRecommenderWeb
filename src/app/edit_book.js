@@ -19,7 +19,6 @@ class EditBook extends Component {
           numpages: 0,
           publicationdate: '',
           publisher: '',
-          studio: '',
           language: '',
           chips_old: [],
           title_old: '',
@@ -28,7 +27,6 @@ class EditBook extends Component {
           numpages_old: 0,
           publicationdate_old: '',
           publisher_old: '',
-          studio_old: '',
           language_old: '',
           image: null,
           path: '',
@@ -87,7 +85,6 @@ class EditBook extends Component {
                 if(data.data[0].publicationdate != undefined) this.setState({ publicationdate_old: data.data[0].publicationdate });
                 if(data.data[0].url.length > 0) this.setState({ url_old: data.data[0].url });
                 if(data.data[0].publisher.length > 0) this.setState({ publisher_old: data.data[0].publisher });
-                if(data.data[0].studio.length > 0) this.setState({ studio_old: data.data[0].studio });
                 if(data.data[0].language.length > 0) this.setState({ language_old: data.data[0].language });
             })   
             .catch(err => console.log(err));
@@ -176,7 +173,7 @@ class EditBook extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="url">URL</label> 
                                     <input type="url" name="url" className="materialize-textarea" value={this.state.url} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">URL actual: {this.state.url_old}</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">URL actual: <a href={this.state.url_old}>Ver URL</a></span>
                                 </div>
                             </div>
                             
@@ -185,14 +182,6 @@ class EditBook extends Component {
                                     <label htmlFor="publisher">Editorial</label> 
                                     <input type="text" name="publisher" className="materialize-textarea" value={this.state.publisher} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Editorial actual: {this.state.publisher_old}</span>
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="input-field col s12">
-                                    <label htmlFor="studio">Estudio</label> 
-                                    <input type="text" name="studio" className="materialize-textarea" value={this.state.studio} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Estudio actual: {this.state.studio_old}</span>
                                 </div>
                             </div>
 

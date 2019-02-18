@@ -55,7 +55,7 @@ class Suggestions extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                this.setState({ sugerencias: data.array, num_total_sug: data.countSuggestions  });
+                this.setState({ sugerencias: data.array, num_total_sug: data.countSuggestions, activePage: 1 });
             })
             .catch(err => console.log(err));
     }
@@ -106,15 +106,23 @@ class Suggestions extends Component {
                         })
                     } 
 
-                    <div className="row center-align">
-                        <Pagination
-                            activePage={this.state.activePage}
-                            itemsCountPerPage={2}
-                            totalItemsCount={this.state.num_total_sug}
-                            pageRangeDisplayed={(this.state.num_total_sug / 2) +1}
-                            onChange={this.handlePageChange}
-                        />
-                    </div>
+                    {(() => {
+                        if(this.state.sugerencias.length > 0) {
+                            return (
+                                <div className="row center-align">
+                                    <Pagination
+                                        activePage={this.state.activePage}
+                                        itemsCountPerPage={2}
+                                        totalItemsCount={this.state.num_total_sug}
+                                        pageRangeDisplayed={(this.state.num_total_sug / 2) +1}
+                                        onChange={this.handlePageChange}
+                                    />
+                                </div>
+                            )
+                        }
+                        else return <h4 className="row center-align green-text" style={{marginBottom: '3%'}}>No hay ninguna sugerencia</h4>;
+                    })()}
+                        
                 </div>
 
                 <Footer/>

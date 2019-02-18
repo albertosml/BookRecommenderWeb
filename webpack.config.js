@@ -18,7 +18,8 @@ module.exports = {
         nueva_sugerencia: './src/app/new_suggestion.js',
         sugerencias: './src/app/suggestions.js',
         libros: './src/app/books.js',
-        generos: './src/app/genres.js'
+        generos: './src/app/genres.js',
+        temas_libres: './src/app/free_themes.js'
     },
     output: {
         path: __dirname + '/src/public',

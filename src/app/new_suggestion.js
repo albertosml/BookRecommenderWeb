@@ -27,6 +27,8 @@ class NewSuggestion extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) this.setState({username: data.username });
+
+                document.title = this.state.username == "admin" ? "Añadir Noticia" : "Añadir Sugerencia";
             })
             .catch(err => console.log(err));
     }
@@ -45,7 +47,9 @@ class NewSuggestion extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) {
-                    M.toast({html: 'Sugerencia realizada'});
+                    if(this.state.username == "admin") M.toast({html: 'Noticia creada'});
+                    else M.toast({html: 'Sugerencia realizada. Gracias por comentarnos.'});
+                    
                     this.setState({ description: '' });
                 }
                 else M.toast({html: data.msg});
@@ -59,19 +63,26 @@ class NewSuggestion extends Component {
     }
 
     render() {
+        let word = this.state.username == "admin" ? "Noticia" : "Sugerencia";
+
         return (
             <div>
                 <Menu/>
-                <h3 className="center-align">Añadir sugerencia</h3>
+                <h3 className="center-align">Añadir { word }</h3>
                     
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <p className="center"><strong>Nueva Sugerencia</strong></p>
+                        <p className="center"><strong>Nueva { word }</strong></p>
                         <form onSubmit={this.addSuggestion}>
                             <div className="row">
                                 <div className="input-field col s12">
                                     <label htmlFor="description">Descripción</label> 
                                     <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="7" cols="50"></textarea> 
+                                    
+                                    {(() => {
+                                        if(this.state.username == "admin") return <span className="helper-text" data-error="wrong" data-success="right">Aquí se puede comentar cualquier sugerencia sobre el uso de la web o novedad sobre ella.</span> 
+                                        else return <span className="helper-text" data-error="wrong" data-success="right">Aquí se puede comentar cualquier sugerencia, duda, problema o arreglo sobre esta web, con el objetivo de hacer mejorar este proyecto.</span>; 
+                                    })()}
                                 </div>
                             </div>
 

@@ -24,7 +24,6 @@ class BookDetails extends Component {
             numpages: 0,
             publicationdate: '',
             publisher: '',
-            studio: '',
             language: '',
             genres: [],
             type: '',
@@ -83,7 +82,6 @@ class BookDetails extends Component {
                     type: data.data[0].type,
                     url: data.data[0].url,
                     publisher: data.data[0].publisher == undefined ? "" : data.data[0].publisher,
-                    studio: data.data[0].studio,
                     language: data.data[0].language,
                     image: data.data[0].image
                 });
@@ -347,7 +345,7 @@ class BookDetails extends Component {
                                 }
                             })()}
                             &nbsp; &nbsp; &nbsp;
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                             &nbsp; &nbsp; &nbsp;
                             <a className="btn waves-effect waves-light" href={this.state.url}>Ver más detalles del libro</a>
                         </div>
@@ -375,7 +373,7 @@ class BookDetails extends Component {
                         })()}
 
                         <div className="row center-align">
-                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Estudio: " + this.state.studio + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
+                            <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                         </div>
 
                         <div className="row center-align">

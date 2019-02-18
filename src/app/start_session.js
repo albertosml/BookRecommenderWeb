@@ -48,7 +48,7 @@ class NewSession extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                if(data.msg.length == 0) location.href = "/details.html";
+                if(data.msg.length == 0) location.href = "/index.html";
                 else M.toast({html: data.msg});
                 this.setState({ username: '', password: ''});
             })

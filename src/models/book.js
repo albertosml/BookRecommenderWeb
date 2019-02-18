@@ -11,7 +11,6 @@ const BookSchema = new Schema({
     publicationdate: { type:Date },
     url: { type:String, trim:true },
     publisher: { type:String, trim:true },
-    studio: { type:String, trim:true },
     language: { type:String, trim:true },
     genres: [
         { genre: { type:Schema.Types.ObjectId, ref:'Genres' } }
