@@ -197,6 +197,7 @@ class EditBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
                                 </div>
                             </div>
 

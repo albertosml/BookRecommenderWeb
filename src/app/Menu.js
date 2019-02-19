@@ -112,7 +112,7 @@ export default class Menu extends Component {
                                 <li><a href="profile.html"><i className="material-icons">perm_identity</i>Perfil</a></li>
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
-                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Añadir/Consultar géneros</a></li>
+                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Consultar géneros</a></li>
                                 <li><a href="free_themes.html"><i className="material-icons">remove_red_eye</i>Temas Libres</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>
@@ -149,7 +149,7 @@ export default class Menu extends Component {
                                 <li><a href="user_registration.html"><i className="material-icons">perm_identity</i>Registrar Usuario</a></li>
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
-                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Añadir/Consultar géneros</a></li>
+                                <li><a href="add_genre.html"><i className="material-icons">remove_red_eye</i>Consultar géneros</a></li>
                                 <li><a href="free_themes.html"><i className="material-icons">remove_red_eye</i>Temas Libres</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>

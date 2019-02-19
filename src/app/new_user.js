@@ -144,9 +144,7 @@ class NewUser extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Si su género no aparece, pinche en el botón de añadir nuevo género e insértelo allí.</span>
-                                    <br/>
-                                    <span className="helper-text" data-error="wrong" data-success="right">Cuando seleccione un género, no le de a la tecla de 'INTRO', sino que lo seleccione con el ratón.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
                                 </div>
                             </div>
 
