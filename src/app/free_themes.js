@@ -120,7 +120,7 @@ class FreeThemes extends Component {
     render() {
         let theme_form;
 
-        if(this.state.username.length > 0 &&  this.state.username != "admin") {
+        if(this.state.username.length > 0 && this.state.username != "admin") {
             theme_form = <div className="row">
                             <div className="col s8 offset-s2 card light-green lighten-3">
                                 <p className="center"><strong>Nuevo Tema</strong></p>

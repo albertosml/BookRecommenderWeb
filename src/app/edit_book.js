@@ -149,7 +149,7 @@ class EditBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="authors">Autores</label> 
                                     <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla Tab para almacenarlo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla "TAB" o tabulador para almacenarlo.</span>
                                 </div>
                             </div>
 
