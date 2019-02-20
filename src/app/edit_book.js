@@ -211,7 +211,7 @@ class EditBook extends Component {
                                     <div className="file-path-wrapper">
                                         <input className="file-path" name="path" defaultValue={this.state.path} type="text" />
                                     </div>
-                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, que no tengan derechos de autor y, también, que tengan un tamaño menor de 16MB; en el caso de que se suba una imagen que no sea libre, la responsabilidad caerá sobre usted.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, sin derechos de autor y, de un tamaño menor a 16MB. No nos haremos responsables de las imágenes subidas a esta web que no sean libres.</span>
                                 </div>
                             </div>
 

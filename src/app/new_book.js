@@ -108,7 +108,7 @@ class NewBook extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="isbn">ISBN</label>
                                     <input type="text" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Si quiere hacer rellenado automático, introduzca sólo el ISBN del libro, el resto de datos se los intentaremos proporcionar, si no se los podemos proporcionar, rellénelos usted</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no se los podamos proporcionar, rellénelos usted mismo.</span>
                                 </div>
                             </div>
 
@@ -123,7 +123,7 @@ class NewBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="authors">Autores</label> 
                                     <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla "TAB" o tabulador para almacenarlo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presione la tecla "TAB" o tabulador para almacenarlo.</span>
                                 </div>
                             </div>
 
@@ -180,7 +180,7 @@ class NewBook extends Component {
                                     <div className="file-path-wrapper">
                                         <input className="file-path" name="path" defaultValue={this.state.path} type="text" />
                                     </div>
-                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, que no tengan derechos de autor y, también, que tengan un tamaño menor de 16MB; en el caso de que se suba una imagen que no sea libre, la responsabilidad caerá sobre usted.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Las imágenes que se suban a esta web deben ser libres, es decir, sin derechos de autor y, de un tamaño menor a 16MB. No nos haremos responsables de las imágenes subidas a esta web que no sean libres.</span>
                                 </div>
                             </div> 
                             
