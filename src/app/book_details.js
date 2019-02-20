@@ -367,7 +367,9 @@ class BookDetails extends Component {
                         {(() => {
                             if(this.state.username.length > 0) {
                                 return (
-                                    <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                    <div className="row center-align">
+                                        <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                    </div>
                                 )
                             }
                         })()}
