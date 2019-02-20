@@ -141,7 +141,7 @@ class EditBook extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="title">Título</label>
                                     <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Título actual: {this.state.title_old}</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no podamos proporcionarle los datos, rellénelos usted mismo.</span>
                                 </div>
                             </div>
                             
@@ -149,7 +149,7 @@ class EditBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="authors">Autores</label> 
                                     <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presionar la tecla "TAB" o tabulador para almacenarlo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presione la tecla "TAB" o tabulador para almacenarlo.</span>
                                 </div>
                             </div>
 

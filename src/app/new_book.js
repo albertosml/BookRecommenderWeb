@@ -108,7 +108,7 @@ class NewBook extends Component {
                                 <div className="input-field col s12">
                                     <label htmlFor="isbn">ISBN</label>
                                     <input type="text" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no se los podamos proporcionar, rellénelos usted mismo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no podamos proporcionarle los datos, rellénelos usted mismo.</span>
                                 </div>
                             </div>
 
@@ -166,7 +166,7 @@ class NewBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse la tecla 'TAB' o tabulador.</span>
                                 </div>
                             </div>
 

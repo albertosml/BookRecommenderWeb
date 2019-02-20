@@ -16,7 +16,7 @@ app.use(express.json({limit: '50mb'}));
 app.use(session({
     secret: 'BookRecommenderDoneByalbertosml',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: true
 }));
 
 // Routes
