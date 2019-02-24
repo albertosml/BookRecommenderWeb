@@ -12,6 +12,28 @@ const Theme = require('../models/theme');
 const Valoration = require('../models/valoration');
 const Suggestion = require('../models/suggestion');
 
+// Functions
+function filtrarGenero(nombre) {
+    // Filtro mayúsculas y minúsculas
+    nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
+
+    // Filtro acentos
+    nombre = nombre.replace("á","a");
+    nombre = nombre.replace("é","e");
+    nombre = nombre.replace("í","i");
+    nombre = nombre.replace("ó","o");
+    nombre = nombre.replace("ú","u");
+    nombre = nombre.replace("ü","u");
+    nombre = nombre.replace("Á","A");
+    nombre = nombre.replace("É","E");
+    nombre = nombre.replace("Í","I");
+    nombre = nombre.replace("Ó","O");
+    nombre = nombre.replace("Ú","U");
+    nombre = nombre.replace("Ü","U");
+
+    return nombre;
+}
+
 // Routes
 router.post('/book/data', async(req, res) => {
     const book = await Book.find({isbn: req.body.isbn});
@@ -58,7 +80,8 @@ router.post('/book/edit', async (req,res) => {
         if(req.body.chips != req.body.chips_old) {
             book.genres = [];
             for(let i in req.body.chips) {
-                const genero = await Genre.find({name: req.body.chips[i]});
+                var nombre = filtrarGenero(req.body.chips[i]);
+                const genero = await Genre.find({name: nombre});
                 if(genero.length > 0) {
                     // Obtengo id y lo inserto
                     await book.genres.push(genero[0]._id);
@@ -66,12 +89,12 @@ router.post('/book/edit', async (req,res) => {
                 else {
                     // Creo el género
                     var g = new Genre();
-                    g.name = req.body.chips[i];
+                    g.name = nombre;
 
                     await g.save();
 
                     // Obtengo el id y lo inserto
-                    const genero = await Genre.find({name: req.body.chips[i]});
+                    const genero = await Genre.find({name: nombre});
                     if(genero.length > 0) await book.genres.push(genero[0]._id);
                 }
             }        
@@ -115,7 +138,7 @@ router.post('/book/signup', async (req,res) => {
                             libro.isbn13 = "";
                             libro.title = req.body.title;
                             libro.authors = req.body.chips_author;
-                            libro.numpages = req.body.numpages;
+                            libro.numpages = req.body.numpages.length > 0 ? req.body.numpages : 0;
 
                             // Se inserta la fecha de publicación, si se ha introducido
                             libro.publicationdate = req.body.publicationdate;
@@ -133,7 +156,8 @@ router.post('/book/signup', async (req,res) => {
                             if(req.body.chips.length > 0) {
                                 libro.genres = [];
                                 for(let i in req.body.chips) {
-                                    const genero = await Genre.find({name: req.body.chips[i]});
+                                    var nombre = filtrarGenero(req.body.chips[i]);
+                                    const genero = await Genre.find({name: nombre});
                                     if(genero.length > 0) {
                                         // Obtengo id y lo inserto
                                         await libro.genres.push(genero[0]._id);
@@ -141,15 +165,15 @@ router.post('/book/signup', async (req,res) => {
                                     else {
                                         // Creo el género
                                         var g = new Genre();
-                                        g.name = req.body.chips[i];
-        
+                                        g.name = nombre;
+                    
                                         await g.save();
-        
+                    
                                         // Obtengo el id y lo inserto
-                                        const genero = await Genre.find({name: req.body.chips[i]});
+                                        const genero = await Genre.find({name: nombre});
                                         if(genero.length > 0) await libro.genres.push(genero[0]._id);
-                                    }
-                                }        
+                                    }    
+                                }   
                             }
 
                             // Si se ha subido una imagen, la almaceno
@@ -206,29 +230,27 @@ router.post('/book/signup', async (req,res) => {
                         libro.language = req.body.language.length > 0 ? req.body.language : data.items[0].volumeInfo.language.toUpperCase();
 
                         // Si se han introducido géneros, se insertan 
-                        libro.genres = [];
-                        
-                        var generos;
-                        if(req.body.chips.length > 0) generos = req.body.chips;
-                        else generos = data.items[0].volumeInfo.categories;
-                            
-                        for(let i in generos) {
-                            const genero = await Genre.find({name: generos[i]});
-                            if(genero.length > 0) {
-                                // Obtengo id y lo inserto
-                                await libro.genres.push(genero[0]._id);
-                            }
-                            else {
-                                // Creo el género
-                                var g = new Genre();
-                                g.name = generos[i];
-
-                                await g.save();
-
-                                // Obtengo el id y lo inserto
-                                const genero = await Genre.find({name: generos[i]});
-                                if(genero.length > 0) await libro.genres.push(genero[0]._id);
-                            }
+                        libro.genres = [];                      
+                        if(req.body.chips.length > 0) {
+                            for(let i in req.body.chips) {
+                                var nombre = filtrarGenero(req.body.chips[i]);
+                                const genero = await Genre.find({name: nombre});
+                                if(genero.length > 0) {
+                                    // Obtengo id y lo inserto
+                                    await libro.genres.push(genero[0]._id);
+                                }
+                                else {
+                                    // Creo el género
+                                    var g = new Genre();
+                                    g.name = nombre;
+                
+                                    await g.save();
+                
+                                    // Obtengo el id y lo inserto
+                                    const genero = await Genre.find({name: nombre});
+                                    if(genero.length > 0) await libro.genres.push(genero[0]._id);
+                                }    
+                            }   
                         }
 
                         // Si se ha subido una imagen, la almaceno
@@ -298,9 +320,28 @@ router.get('/user/data', async (req,res) => {
 });
 
 router.post('/user/profile', async (req,res) => {
+    // El usuario administrador no puede cambiarse el nombre de usuario, lo comprobamos 
+    if(req.body.username.length > 0 && req.session.username == "admin") return res.json({ msg: 'El administrador no puede cambiarse el nombre de usuario'});
+
+    var cambiado = false;
     // Obtengo el usuario de la sesión
     const user = await User.findOne({username: req.session.username});
     if(user != null) {
+        // Si se ha introducido un nombre de usuario distinto, se actualiza si se puede
+        if(req.body.username.length > 0 && req.body.username != req.body.username_old) {
+            // Comprobamos si existe el nuevo nombre de usuario, si existe no se podrá reemplazar
+            var usuario = await User.findOne({username: req.body.username});
+            if(usuario == null) {// Compruebo si ha introducido la contraseña
+                if(req.body.password.length > 0 && req.body.password == req.body.confirmpassword) {
+                    user.username = req.body.username;
+                    req.session.username = '';
+                    cambiado = true;
+                }
+                else return res.json({ msg: 'Para cambiar el nombre de usuario hay que introducir la contraseña y confirmarla'});
+            }
+            else return res.json({ msg: 'Nombre de usuario ya existente, pruebe con otro nombre de usuario'});
+        }
+
         // Si se introduce un nombre distinto, se actualiza
         if(req.body.name.length > 0 && req.body.name != req.body.name_old) user.name = req.body.name;
       
@@ -309,20 +350,21 @@ router.post('/user/profile', async (req,res) => {
 
         // Si se introduce un email distinto, se actualiza
         if(req.body.email.length > 0 && req.body.email != req.body.email_old) user.email = req.body.email;
-        
+
         // Compruebo que se haya introducido la contraseña
         if(req.body.password.length > 0) {
             if(req.body.password == req.body.confirmpassword) {
-                user.password = crypto.createHmac('sha1', req.session.username).update(req.body.password).digest('hex');
+                user.password = crypto.createHmac('sha1', user.username).update(req.body.password).digest('hex');
             }
-            else res.json({ msg: 'Las contraseñas no son iguales'});
+            else return res.json({ msg: 'Las contraseñas no son iguales'});
         }
                             
         // Si se ha modificado los géneros, los actualizamos
         if(req.body.chips != req.body.chips_old) {
             user.favouritesgenres = [];
             for(let i in req.body.chips) {
-                const genero = await Genre.find({name: req.body.chips[i]});
+                var nombre = filtrarGenero(req.body.chips[i]);
+                const genero = await Genre.find({name: nombre});
                 if(genero.length > 0) {
                     // Obtengo id y lo inserto
                     await user.favouritesgenres.push(genero[0]._id);
@@ -330,20 +372,21 @@ router.post('/user/profile', async (req,res) => {
                 else {
                     // Creo el género
                     var g = new Genre();
-                    g.name = req.body.chips[i];
+                    g.name = nombre;
 
                     await g.save();
 
                     // Obtengo el id y lo inserto
-                    const genero = await Genre.find({name: req.body.chips[i]});
+                    const genero = await Genre.find({name: nombre});
                     if(genero.length > 0) await user.favouritesgenres.push(genero[0]._id);
-                }
-            }        
+                }    
+            }           
         }                   
         
         await user.save();
                
-        res.json({msg: ''});      
+        if(cambiado) res.json({msg: '', close: 'si'}); 
+        else res.json({msg: ''});      
     }
     else res.json({ msg: 'Nombre de usuario no encontrado'});
 });
@@ -359,9 +402,9 @@ router.post('/users/signin', async (req,res) => {
                 if(crypto.createHmac('sha1', req.body.username).update(req.body.password).digest('hex') === username[0].password) {
                     req.session.username = req.body.username;
                     
-                    // Las sesiones se mantendrán almacenadas como mucho 1 hora
-                    req.session.cookie.expires = new Date(Date.now() + 3600000)
-                    req.session.cookie.maxAge = 3600000
+                    // Las sesiones se mantendrán almacenadas como mucho 15 minutos
+                    req.session.cookie.expires = new Date(Date.now() + 900000)
+                    req.session.cookie.maxAge = 900000
                     
                     res.json({msg: ''});
                 }
@@ -397,7 +440,8 @@ router.post('/users/signup', async (req,res) => {
                                 var usuario = new User(data);
 
                                 for(let i in req.body.chips) {
-                                    const genero = await Genre.find({name: req.body.chips[i]});
+                                    var nombre = filtrarGenero(req.body.chips[i]);
+                                    const genero = await Genre.find({name: nombre});
                                     if(genero.length > 0) {
                                         // Obtengo id y lo inserto
                                         await usuario.favouritesgenres.push(genero[0]._id);
@@ -405,15 +449,15 @@ router.post('/users/signup', async (req,res) => {
                                     else {
                                         // Creo el género
                                         var g = new Genre();
-                                        g.name = req.body.chips[i];
+                                        g.name = nombre;
                     
                                         await g.save();
                     
                                         // Obtengo el id y lo inserto
-                                        const genero = await Genre.find({name: req.body.chips[i]});
+                                        const genero = await Genre.find({name: nombre});
                                         if(genero.length > 0) await usuario.favouritesgenres.push(genero[0]._id);
-                                    }
-                                } 
+                                    }    
+                                }   
                                 
                                 await usuario.save();
                                 
@@ -694,13 +738,28 @@ router.post('/removependingbook', async (req,res) => {
 });
 
 router.post('/addreadedbook', async (req,res) => {
-    var user = await User.findOne({ username: req.session.username }); 
-    var b = await Book.findOne({ isbn: req.body.isbn });
+    var book = await Book.findOne({ isbn: req.body.isbn });
+    var user = await User.findOne({ username: req.session.username, pending_books: {$elemMatch: {_id: book._id}} });
 
-    user.readed_books.push(b._id);
-    await user.save();
+    if(user == null) {
+        user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: book._id}} });
 
-    res.json({ msg: '' });
+        if(user == null) {
+            user = await User.findOne({ username: req.session.username, recomended_books: {$elemMatch: {_id: book._id}} });
+
+            if(user == null) {
+                // Añado el libro como pendiente
+                user = await User.findOne({ username: req.session.username });
+                user.readed_books.push(book._id);
+                await user.save();
+
+                res.json({ msg: '' });
+            }
+            else res.json({ msg: 'El libro ya está recomendado por el sistema, cambiélo a pendiente'}); 
+        }
+        else res.json({ msg: 'El libro ya está marcado como leído'});
+    }
+    else res.json({ msg: 'El libro ya está añadido como pendiente de leer, cambiélo a leído'});
 });
 
 router.post('/themes', async (req,res) => {
@@ -772,39 +831,6 @@ router.post('/themes', async (req,res) => {
     res.json({ array: array, countThemes: numthemes });
 });
 
-function filtrarAcentos(nombre) {
-    nombre = nombre.replace("á","a");
-    nombre = nombre.replace("é","e");
-    nombre = nombre.replace("í","i");
-    nombre = nombre.replace("ó","o");
-    nombre = nombre.replace("ú","u");
-    nombre = nombre.replace("ü","u");
-    nombre = nombre.replace("Á","A");
-    nombre = nombre.replace("É","E");
-    nombre = nombre.replace("Í","I");
-    nombre = nombre.replace("Ó","O");
-    nombre = nombre.replace("Ú","U");
-    nombre = nombre.replace("Ü","U");
-    return nombre;
-}
-
-router.post('/newgenre', async (req,res) => {
-    if(req.body.name.length > 0) { // Compruebo nombre
-        // Compruebo si se ha insertado el género
-        var nombre = req.body.name.charAt(0).toUpperCase() + req.body.name.slice(1).toLowerCase();
-        nombre = filtrarAcentos(nombre);
-        const found = await Genre.find({name: nombre});
-        if(found.length == 0) {
-            const data = { name: nombre };
-            const genre = new Genre(data);
-            await genre.save();
-            res.json({ msg: ''});
-        }
-        else res.json({ msg: 'El género ya estaba añadido' });    
-    }
-    else res.json({ msg: 'Nombre del género no introducido'});
-});
-
 router.post('/newpendingbook', async (req,res) => {
     var book = await Book.findOne({ isbn: req.body.isbn });
     var user = await User.findOne({ username: req.session.username, pending_books: {$elemMatch: {_id: book._id}} });
@@ -823,7 +849,7 @@ router.post('/newpendingbook', async (req,res) => {
 
                 res.json({ msg: '' });
             }
-            else res.json({ msg: 'El libro ya está recomendado por el sistema'}); 
+            else res.json({ msg: 'El libro ya está recomendado por el sistema, cambiélo a pendiente'}); 
         }
         else res.json({ msg: 'El libro ya está marcado como leído'});
     }

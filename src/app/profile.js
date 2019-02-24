@@ -5,6 +5,7 @@ import Menu from './Menu';
 import Footer from './Footer';
 
 import Chips, { Chip } from 'react-chips';
+import { ImageGradient } from 'material-ui/svg-icons';
 
 class Perfil extends Component {
     constructor(props) {
@@ -21,6 +22,8 @@ class Perfil extends Component {
             name_old: '',
             surname_old: '',
             email_old: '',
+            username: '',
+            username_old: ''
         }
         this.handleChange = this.handleChange.bind(this);
         this.editUser = this.editUser.bind(this);
@@ -84,7 +87,8 @@ class Perfil extends Component {
                     chips_old: data.generos,
                     name_old: data.user.name,
                     surname_old: data.user.surname,
-                    email_old: data.user.email
+                    email_old: data.user.email,
+                    username_old: data.user.username
                 });
             })   
             .catch(err => console.log(err));
@@ -102,6 +106,13 @@ class Perfil extends Component {
         })
             .then(res => res.json())
             .then(data => { 
+                if(data.close != undefined) {
+                    M.toast({ html: 'Se va a cerrar su sesión, vuelva a iniciar sesión para confirmar el cambio de nombre de usuario' });
+
+                    // Espera a la redirección para que se vea el mensaje de arriba
+                    setTimeout(() => location.href = 'index.html', 2000);
+                }
+
                 if(data.msg.length == 0) M.toast({html: 'Usuario editado'}); 
                 else M.toast({html: data.msg});
 
@@ -128,49 +139,57 @@ class Perfil extends Component {
                         <p className="center">Rellene los campos que quiera modificar</p>
                         <form onSubmit={this.editUser}>
                             <div className="row">
+                                <div className="input-field col s12">
+                                    <label className="active" htmlFor="username">Nombre de usuario</label>
+                                    <input placeholder="" type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Nombre de usuario actual: {this.state.username_old}</span>
+                                </div>
+                            </div>
+
+                            <div className="row">
                                 <div className="input-field col s12">    
-                                    <label htmlFor="name">Nombre</label>
-                                    <input type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="name">Nombre</label>
+                                    <input placeholder="" type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Nombre actual: {this.state.name_old}</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="surname">Apellidos</label> 
-                                    <input type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="surname">Apellidos</label> 
+                                    <input placeholder="" type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Apellidos actuales: {this.state.surname_old}</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="email">Correo Electrónico</label> 
-                                    <input type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="email">Correo Electrónico</label> 
+                                    <input placeholder="" type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Email actual: {this.state.email_old}</span>
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="password">Contraseña</label> 
-                                    <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
+                                    <label className="active" htmlFor="password">Contraseña</label> 
+                                    <input placeholder="" type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
                                     <span className="helper-text" data-error="wrong" data-success="right">Para modificar la contraseña, introduzca una nueva y confirmela.</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="confirmpassword">Confirmar contraseña</label> 
-                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirmpassword} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="confirmpassword">Confirmar contraseña</label> 
+                                    <input placeholder="" type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirmpassword} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="col s12">
-                                    <label htmlFor="genres">Géneros Favoritos</label> 
+                                    <label className="active" htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque su género en el autocompletado y selecciónelo con el ratón. Si no aparece, introdúzcalo manualmente y pulse la tecla de la coma (",").</span>
                                 </div>
                             </div>
 

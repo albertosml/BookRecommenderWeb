@@ -1,5 +1,3 @@
-//const JavaScriptObfuscator = require('webpack-obfuscator');
-
 module.exports = {
     entry: {
         inicio: './src/app/index.js',
@@ -14,7 +12,6 @@ module.exports = {
         mis_libros_leidos: './src/app/my_readed_books.js',
         mis_libros_recomendados: './src/app/my_recommended_books.js',
         detalles_libro: './src/app/book_details.js',
-        anadir_genero: './src/app/add_genre.js',
         nueva_sugerencia: './src/app/new_suggestion.js',
         sugerencias: './src/app/suggestions.js',
         libros: './src/app/books.js',
@@ -33,10 +30,5 @@ module.exports = {
                 exclude: /node_modules/
             }
         ]
-    },
-    /*plugins: [
-        new JavaScriptObfuscator({
-            rotateUnicodeArray: true
-        }, ['inicio.js'])
-    ]*/
+    }
 };

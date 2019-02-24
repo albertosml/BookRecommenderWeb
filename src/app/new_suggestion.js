@@ -76,8 +76,8 @@ class NewSuggestion extends Component {
                         <form onSubmit={this.addSuggestion}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="description">Descripción</label> 
-                                    <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="7" cols="50"></textarea> 
+                                    <label className="active" htmlFor="description">Descripción</label> 
+                                    <textarea placeholder="" name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="7" cols="50"></textarea> 
                                     
                                     {(() => {
                                         if(this.state.username == "admin") return <span className="helper-text" data-error="wrong" data-success="right">Aquí se puede comentar cualquier sugerencia sobre el uso de la web o novedad sobre ella.</span> 

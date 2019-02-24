@@ -100,43 +100,43 @@ class NewUser extends Component {
                         <form onSubmit={this.newUser}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="username">Nombre de usuario</label>
-                                    <input type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="username">Nombre de usuario</label>
+                                    <input placeholder="" type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="name">Nombre</label>
-                                    <input type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="name">Nombre</label>
+                                    <input placeholder="" type="text" name="name" className="materialize-textarea" value={this.state.name} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="surname">Apellidos</label> 
-                                    <input type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="surname">Apellidos</label> 
+                                    <input placeholder="" type="text" name="surname" className="materialize-textarea" value={this.state.surname} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="email">Correo Electrónico</label> 
-                                    <input type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="email">Correo Electrónico</label> 
+                                    <input placeholder="" type="email" name="email" className="materialize-textarea" value={this.state.email} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="password">Contraseña</label> 
-                                    <input type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
+                                    <label className="active" htmlFor="password">Contraseña</label> 
+                                    <input placeholder="" type="password" name="password" className="materialize-textarea" value={this.state.password} onChange={this.handleChange} />  
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="confirmpassword">Confirmar contraseña</label> 
-                                    <input type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirm_password} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="confirmpassword">Confirmar contraseña</label> 
+                                    <input placeholder="" type="password" name="confirmpassword" className="materialize-textarea" value={this.state.confirm_password} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
@@ -144,7 +144,7 @@ class NewUser extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros Favoritos</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario que le guste" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque su género en el autocompletado y selecciónelo con el ratón. Si no aparece, introdúzcalo manualmente y pulse la tecla de la coma (",").</span>
                                 </div>
                             </div>
 

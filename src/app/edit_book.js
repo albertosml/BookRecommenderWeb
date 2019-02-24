@@ -16,7 +16,7 @@ class EditBook extends Component {
           title: '',
           chips_author: [],
           url: '',
-          numpages: 0,
+          numpages: '',
           publicationdate: '',
           publisher: '',
           language: '',
@@ -139,9 +139,9 @@ class EditBook extends Component {
                         <form onSubmit={this.editBook}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="title">Título</label>
-                                    <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no podamos proporcionarle los datos, rellénelos usted mismo.</span>
+                                    <label className="active" htmlFor="title">Título</label>
+                                    <input placeholder=" " type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Título actual: {this.state.title_old}</span>
                                 </div>
                             </div>
                             
@@ -149,46 +149,46 @@ class EditBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="authors">Autores</label> 
                                     <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presione la tecla "TAB" o tabulador para almacenarlo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Escriba el nombre de los autores separados por comas.</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="numpages">Número de páginas</label> 
-                                    <input type="number" name="numpages" min="0" className="materialize-textarea" value={this.state.numpages} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="numpages">Número de páginas</label> 
+                                    <input placeholder=" " type="number" name="numpages" min="0" className="materialize-textarea" value={this.state.numpages} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Número de páginas actual: {this.state.numpages_old}</span> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="date-field col s12">
-                                    <label htmlFor="publicationdate">Fecha de publicación</label> 
-                                    <input type="date" name="publicationdate" className="materialize-textarea" value={this.state.publicationdate} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="publicationdate">Fecha de publicación</label> 
+                                    <input placeholder=" " type="date" name="publicationdate" className="materialize-textarea" value={this.state.publicationdate} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Fecha de publicación actual: {this.state.publicationdate_old.split("T")[0]}</span> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="url">URL</label> 
-                                    <input type="url" name="url" className="materialize-textarea" value={this.state.url} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="url">URL</label> 
+                                    <input placeholder=" " type="url" name="url" className="materialize-textarea" value={this.state.url} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">URL actual: <a href={this.state.url_old}>Ver URL</a></span>
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="publisher">Editorial</label> 
-                                    <input type="text" name="publisher" className="materialize-textarea" value={this.state.publisher} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="publisher">Editorial</label> 
+                                    <input placeholder=" " type="text" name="publisher" className="materialize-textarea" value={this.state.publisher} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Editorial actual: {this.state.publisher_old}</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="language">Idioma</label> 
-                                    <input type="text" name="language" className="materialize-textarea" value={this.state.language} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="language">Idioma</label> 
+                                    <input placeholder=" " type="text" name="language" className="materialize-textarea" value={this.state.language} onChange={this.handleChange} /> 
                                     <span className="helper-text" data-error="wrong" data-success="right">Idioma actual: {this.state.language_old}</span>
                                 </div>
                             </div>
@@ -197,7 +197,7 @@ class EditBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse a la tecla 'TAB' o tabulador.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque su género en el autocompletado y selecciónelo con el ratón. Si no aparece, introdúzcalo manualmente y pulse la tecla de la coma (",").</span>
                                 </div>
                             </div>
 

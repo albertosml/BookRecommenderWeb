@@ -127,15 +127,15 @@ class FreeThemes extends Component {
                                 <form onSubmit={this.addTheme}>
                                     <div className="row">
                                         <div className="input-field col s12">
-                                            <label htmlFor="title">Título</label>
-                                            <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
+                                            <label className="active" htmlFor="title">Título</label>
+                                            <input placeholder="" type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
                                         </div>
                                     </div>
 
                                     <div className="row">
                                         <div className="input-field col s12">
-                                            <label htmlFor="description">Descripción</label> 
-                                            <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                            <label className="active" htmlFor="description">Descripción</label> 
+                                            <textarea placeholder="" name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
                                         </div>
                                     </div>
 
@@ -210,8 +210,8 @@ class FreeThemes extends Component {
                                                     <form onSubmit={this.addComment}>
                                                         <div className="row">
                                                             <div className="input-field col s12">
-                                                                <label htmlFor="response">Respuesta</label> 
-                                                                <textarea name="response" className="materialize-textarea" value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                                <label className="active" htmlFor="response">Respuesta</label> 
+                                                                <textarea placeholder="" name="response" className="materialize-textarea" value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
                                                             </div>
                                                         </div>
 

@@ -106,16 +106,16 @@ class NewBook extends Component {
                         <form onSubmit={this.newBook} encType="multipart/form-data">
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="isbn">ISBN</label>
-                                    <input type="text" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
-                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca sólo el ISBN del libro. En el caso de que no podamos proporcionarle los datos, rellénelos usted mismo.</span>
+                                    <label className="active" htmlFor="isbn">ISBN</label>
+                                    <input placeholder="" type="text" name="isbn" className="materialize-textarea" value={this.state.isbn} onChange={this.handleChange} /> 
+                                    <span className="helper-text" data-error="wrong" data-success="right">Para rellenado automático, introduzca el ISBN del libro para que sean rellenados los campos, excepto los géneros y la imagen. En el caso de que no podamos proporcionarle los datos, rellénelos usted mismo.</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="title">Título</label>
-                                    <input type="text" name="title" value={this.state.title} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="title">Título</label>
+                                    <input placeholder="" type="text" name="title" value={this.state.title} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
@@ -123,42 +123,42 @@ class NewBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="authors">Autores</label> 
                                     <Chips value={this.state.chips_author} placeholder="Añada los autores..." onChange={chips_author => this.setState({ chips_author })} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Después de escribir el nombre de cada autor, presione la tecla "TAB" o tabulador para almacenarlo.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Escriba el nombre de los autores separados por comas.</span>
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="numpages">Número de páginas</label> 
-                                    <input type="number" name="numpages" min="0" value={this.state.numpages} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="numpages">Número de páginas</label> 
+                                    <input placeholder="" type="number" name="numpages" min="0" value={this.state.numpages} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="date-field col s12">
-                                    <label htmlFor="publicationdate">Fecha de publicación</label> 
+                                    <label className="active" htmlFor="publicationdate">Fecha de publicación</label> 
                                     <input type="date" name="publicationdate" value={this.state.publicationdate} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="url">URL</label> 
-                                    <input type="url" name="url" value={this.state.url} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="url">URL</label> 
+                                    <input placeholder="" type="url" name="url" value={this.state.url} onChange={this.handleChange} /> 
                                 </div>
                             </div>
                             
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="publisher">Editorial</label> 
-                                    <input type="text" name="publisher" value={this.state.publisher} onChange={this.handleChange} /> 
+                                    <label className="active" htmlFor="publisher">Editorial</label> 
+                                    <input placeholder="" type="text" name="publisher" value={this.state.publisher} onChange={this.handleChange} /> 
                                 </div>
                             </div>
 
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label htmlFor="language">Idioma</label> 
-                                    <input type="text" name="language" value={this.state.language} onChange={this.handleChange}/> 
+                                    <label className="active" htmlFor="language">Idioma</label> 
+                                    <input placeholder="" type="text" name="language" value={this.state.language} onChange={this.handleChange}/> 
                                 </div>
                             </div>
 
@@ -166,7 +166,7 @@ class NewBook extends Component {
                                 <div className="col s12">
                                     <label htmlFor="genres">Géneros</label> 
                                     <Chips value={this.state.chips} placeholder="Añada un género literario" onChange={chips => this.setState({ chips })} suggestions={this.state.suggestions} />
-                                    <span className="helper-text" data-error="wrong" data-success="right">Busque sú género en el autocompletado y selecciónelo con el ratón. Si su género no aparece, introdúzcalo y pulse la tecla 'TAB' o tabulador.</span>
+                                    <span className="helper-text" data-error="wrong" data-success="right">Busque su género en el autocompletado y selecciónelo con el ratón. Si no aparece, introdúzcalo manualmente y pulse la tecla de la coma (",").</span>
                                 </div>
                             </div>
 

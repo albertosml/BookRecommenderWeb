@@ -8,6 +8,7 @@ import StarRatings from 'react-star-ratings';
 import Pagination from 'react-js-pagination';
 import ReactTooltip from 'react-tooltip';
 import Chart from "react-google-charts";
+import { NotificationPhoneBluetoothSpeaker } from 'material-ui/svg-icons';
 
 class BookDetails extends Component {
     constructor() {
@@ -43,12 +44,14 @@ class BookDetails extends Component {
             image: null
         };
 
+        // Funciones .bind si tienen que leer algo de state
         this.handleChange = this.handleChange.bind(this);
         this.addValoration = this.addValoration.bind(this);
         this.handlePageChange = this.handlePageChange.bind(this);
         this.addLike = this.addLike.bind(this);
         this.addDislike = this.addDislike.bind(this);
         this.addPendingBook = this.addPendingBook.bind(this);
+        this.addReadedBook = this.addReadedBook.bind(this);
         this.addTheme = this.addTheme.bind(this);
         this.addComment = this.addComment.bind(this);
         this.handlePageThemeChange = this.handlePageThemeChange.bind(this);
@@ -74,8 +77,8 @@ class BookDetails extends Component {
                 this.setState({
                     titulo: data.data[0].title,
                     isbn: data.data[0].isbn,
-                    isbn10: data.data[0].isbn.length == 10 ? data.data[0].isbn : "",
-                    isbn13: data.data[0].isbn.length == 13 ? data.data[0].isbn : data.data[0].isbn13,
+                    isbn10: data.data[0].isbn.length == 10 ? data.data[0].isbn : "No encontrado",
+                    isbn13: data.data[0].isbn.length == 13 ? data.data[0].isbn : (data.data[0].isbn13.length > 0 ? data.data[0].isbn13 : "No encontrado"),
                     author: data.data[0].authors,
                     numpages: data.data[0].numpages,
                     genres: data.genres,
@@ -146,6 +149,28 @@ class BookDetails extends Component {
             .then(res => res.json())
             .then(data => {
                 if(data.msg.length == 0) M.toast({html: 'Libro añadido como pendiente de leer'});
+                else M.toast({html: data.msg});
+            })
+            .catch(err => console.log(err));
+    }
+
+    addReadedBook() {
+        fetch('/addreadedbook',{
+            method: 'POST',
+            body: JSON.stringify({ isbn: this.state.isbn }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    M.toast({html: 'Libro añadido como leído'});
+
+                    // Espera a la redirección para que se vea el mensaje de arriba
+                    setTimeout(() => location.href = '/book_details.html?isbn=' + this.state.isbn, 1000);
+                }
                 else M.toast({html: data.msg});
             })
             .catch(err => console.log(err));
@@ -336,15 +361,20 @@ class BookDetails extends Component {
                             &nbsp;
                             <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
                         </h3>
+
+                        {(() => {
+                            if(this.state.username.length > 0 && this.state.username != "admin") {
+                                return (
+                                    <div className="row">
+                                        <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button> 
+                                        &nbsp; &nbsp; &nbsp;
+                                        <button onClick={this.addReadedBook} className="btn waves-effect waves-light" type="submit">Agregar a Leídos</button>  
+                                    </div>
+                                )
+                            }
+                        })()}
+                       
                         <div className="row">
-                            {(() => {
-                                if(this.state.username.length > 0) {
-                                    return (
-                                        <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
-                                    )
-                                }
-                            })()}
-                            &nbsp; &nbsp; &nbsp;
                             <button className="btn waves-effect waves-light" onClick={() => alert(" - ISBN-10: " + this.state.isbn10 + "\n - ISBN-13: " + this.state.isbn13 + "\n - Autores: " + this.state.author + "\n - Número de páginas: " + this.state.numpages + "\n - Fecha de publicación: " + this.state.publicationdate + "\n - URL: " + this.state.url + "\n - Editorial: " + this.state.publisher + "\n - Idioma: " + this.state.language + "\n - Géneros: " + this.state.genres)} type="submit" id="buttonDetalles">Datos del libro</button>
                             &nbsp; &nbsp; &nbsp;
                             <a className="btn waves-effect waves-light" href={this.state.url}>Ver más detalles del libro</a>
@@ -365,10 +395,16 @@ class BookDetails extends Component {
                         </div>    
 
                         {(() => {
-                            if(this.state.username.length > 0) {
+                            if(this.state.username.length > 0 && this.state.username != "admin") {
                                 return (
-                                    <div className="row center-align">
-                                        <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                    <div>
+                                        <div className="row center-align">
+                                            <button onClick={this.addPendingBook} className="btn waves-effect waves-light" type="submit">Agregar a Pendientes</button>  
+                                        </div>
+
+                                        <div className="row center-align">
+                                            <button onClick={this.addReadedBook} className="btn waves-effect waves-light" type="submit">Agregar a Leídos</button>  
+                                        </div>
                                     </div>
                                 )
                             }
@@ -450,8 +486,8 @@ class BookDetails extends Component {
                                                             <form onSubmit={this.addComment}>
                                                                 <div className="row">
                                                                     <div className="input-field col s12">
-                                                                        <label htmlFor="response">Respuesta</label> 
-                                                                        <textarea name="response" className="materialize-textarea" value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                                        <label className="active" htmlFor="response">Respuesta</label> 
+                                                                        <textarea name="response" className="materialize-textarea" placeholder={" "} value={this.state.response} onChange={this.handleChange} rows="3" cols="50"></textarea> 
                                                                     </div>
                                                                 </div>
 
@@ -497,15 +533,15 @@ class BookDetails extends Component {
                                             <form onSubmit={this.addTheme}>
                                                 <div className="row">
                                                     <div className="input-field col s12">
-                                                        <label htmlFor="title">Título</label>
-                                                        <input type="text" name="title" className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
+                                                        <label className="active" htmlFor="title">Título</label>
+                                                        <input type="text" name="title" placeholder={" "} className="materialize-textarea" value={this.state.title} onChange={this.handleChange}/> 
                                                     </div>
                                                 </div>
 
                                                 <div className="row">
                                                     <div className="input-field col s12">
-                                                        <label htmlFor="description">Descripción</label> 
-                                                        <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                        <label className="active" htmlFor="description">Descripción</label> 
+                                                        <textarea name="description" placeholder={" "} className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
                                                     </div>
                                                 </div>
 
@@ -531,6 +567,8 @@ class BookDetails extends Component {
                                 )
                             }
                         })()}
+
+                        <p className="white-text center-align">IMPORTANTE: Un libro solo se podrá valorar si se ha registrado como leído.</p>
 
                         {
                             this.state.valoraciones.map((valoracion) => {
@@ -596,8 +634,8 @@ class BookDetails extends Component {
                                         <form onSubmit={this.addValoration}>
                                             <div className="row">
                                                 <div className="input-field col s12">
-                                                    <label htmlFor="description">Descripción</label> 
-                                                    <textarea name="description" className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
+                                                    <label className="active" htmlFor="description">Descripción</label> 
+                                                    <textarea name="description" placeholder={" "} className="materialize-textarea" value={this.state.description} onChange={this.handleChange} rows="3" cols="50"></textarea> 
                                                 </div>
                                             </div>
 

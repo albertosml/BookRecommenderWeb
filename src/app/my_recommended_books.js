@@ -12,7 +12,6 @@ class RecommendedBooks extends Component {
     constructor (props, context) {
         super(props, context);
         this.state = {
-            percentages: [33,34,33],
             username: '',
             recBooks: [],
             recBooks_mostrados: [],
@@ -20,8 +19,6 @@ class RecommendedBooks extends Component {
         };
 
         this.handlePageChange = this.handlePageChange.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.requestRecommendation = this.requestRecommendation.bind(this);
     }
 
     componentWillMount() {
@@ -63,10 +60,6 @@ class RecommendedBooks extends Component {
             activePage: pageNumber,
             recBooks_mostrados: this.state.recBooks.slice(item, item+2)
         });
-    }
-
-    handleChange(value) {
-        this.setState({ percentage : value });
     }
 
     removeRecommendedBook(isbn) {
@@ -121,8 +114,10 @@ class RecommendedBooks extends Component {
         
     }
 
-    requestRecommendation() {
-        M.toast({'html': this.state.percentage });
+    requestRecommendation(e) {
+        e.preventDefault();
+        var value = document.querySelectorAll(".preference");
+        for(let i in value) if(value[i].checked);
         M.toast({'html': 'Recomendación solicitada'});
     }
 
@@ -175,32 +170,30 @@ class RecommendedBooks extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <p className="center-align">¿En qué quiere que nos basemos más para hacerle la recomendación?</p>                                                
+                        <p className="center-align">Seleccione el criterio o los criterios en los que quiere que basemos sus recomendaciones</p>
                         <div className="row">
                             <form onSubmit={this.requestRecommendation}>
-                                <div id="normal" className="row">
-                                    <p className="col s2 offset-s1">Valoraciones</p>
-                                    <div className="col s6">
-                                        <MultiSlider colors={["#FCBD7E", "#EB9F71", "#E6817C"]} values={this.state.percentages} onChange={(p) => this.setState({ percentages: p})} /> 
-                                    </div>
-                                    <p className="col s2">Comentarios</p>
-                                    <p className="col s12 center">Géneros</p>
-                                </div> 
-    
+                                <p className="center-align">
+                                    <label>
+                                        <input type="checkbox" className="preference" value="géneros" />
+                                        <span>Géneros</span>
+                                    </label>
+                                </p>
 
-                                <div id="responsive" className="row">
-                                    <div className="row"> 
-                                        <p className="left">&nbsp; &nbsp; &nbsp; Valoraciones</p>
-                                        <p className="right" style={{marginRight: '7%'}}>Comentarios</p>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col s8 offset-s2">
-                                            <MultiSlider colors={["#FCBD7E", "#EB9F71", "#E6817C"]} values={this.state.percentages} onChange={(p) => this.setState({ percentages: p})} /> 
-                                        </div>
-                                    </div>
-                                    <p className="row center-align">Géneros</p>         
-                                </div> 
-                                
+                                <p className="center-align">
+                                    <label>
+                                        <input type="checkbox" className="preference" value="valoraciones" />
+                                        <span>Valoraciones</span>
+                                    </label>
+                                </p>
+
+                                <p className="center-align">
+                                    <label>
+                                        <input type="checkbox" className="preference" value="comentarios" />
+                                        <span>Comentarios</span>
+                                    </label>
+                                </p>
+                                    
                                 <div className="row">
                                     <div className="center-align">
                                         <button style={{color: 'black'}} className="btn waves-effect waves-light light-green lighten-4">
