@@ -402,9 +402,9 @@ router.post('/users/signin', async (req,res) => {
                 if(crypto.createHmac('sha1', req.body.username).update(req.body.password).digest('hex') === username[0].password) {
                     req.session.username = req.body.username;
                     
-                    // Las sesiones se mantendrán almacenadas como mucho 15 minutos
-                    req.session.cookie.expires = new Date(Date.now() + 900000)
-                    req.session.cookie.maxAge = 900000
+                    // Las sesiones se mantendrán almacenadas como mucho 1 hora
+                    req.session.cookie.expires = new Date(Date.now() + 3600000);
+                    req.session.cookie.maxAge = 3600000;
                     
                     res.json({msg: ''});
                 }
