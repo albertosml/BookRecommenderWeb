@@ -6,7 +6,6 @@ import Footer from './Footer';
 
 import ReactTooltip from 'react-tooltip';
 import Pagination from 'react-js-pagination';
-import MultiSlider from "multi-slider";
 
 class RecommendedBooks extends Component {
     constructor (props, context) {

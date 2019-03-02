@@ -113,6 +113,7 @@ export default class Menu extends Component {
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
                                 <li><a href="free_themes.html"><i className="material-icons">remove_red_eye</i>Temas Libres</a></li>
+                                <li><a href="books.html"><i className="material-icons">remove_red_eye</i>Ver Libros Añadidos</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">
@@ -149,6 +150,7 @@ export default class Menu extends Component {
                                 <li><a href="book_registration.html"><i className="material-icons">book</i>Registrar Libro</a></li>
                                 <li><a href="new_suggestion.html"><i className="material-icons">edit</i>Nueva Sugerencia</a></li>
                                 <li><a href="free_themes.html"><i className="material-icons">remove_red_eye</i>Temas Libres</a></li>
+                                <li><a href="books.html"><i className="material-icons">remove_red_eye</i>Ver Libros Añadidos</a></li>
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">

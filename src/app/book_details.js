@@ -78,7 +78,7 @@ class BookDetails extends Component {
                     titulo: data.data[0].title,
                     isbn: data.data[0].isbn,
                     isbn10: data.data[0].isbn.length == 10 ? data.data[0].isbn : "No encontrado",
-                    isbn13: data.data[0].isbn.length == 13 ? data.data[0].isbn : (data.data[0].isbn13.length > 0 ? data.data[0].isbn13 : "No encontrado"),
+                    isbn13: data.data[0].isbn.length == 13 ? data.data[0].isbn : (data.data[0].isbn13 != undefined ? data.data[0].isbn13 : "No encontrado"),
                     author: data.data[0].authors,
                     numpages: data.data[0].numpages,
                     genres: data.genres,

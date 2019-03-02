@@ -14,7 +14,8 @@ class Genres extends Component {
             username: '',
             genres: [],
             genres_mostrados: [],
-            activePage: 1
+            activePage: 1,
+            genresperpage: 5
         };
 
         this.handlePageChange = this.handlePageChange.bind(this);
@@ -45,16 +46,16 @@ class Genres extends Component {
             .then(res => res.json())
             .then(data => {
                 this.setState({ genres: data });
-                this.setState({ genres_mostrados: this.state.genres.slice(0,2) });
+                this.setState({ genres_mostrados: this.state.genres.slice(0,this.state.genresperpage) });
             })
             .catch(err => console.log(err));
     }
 
     handlePageChange(pageNumber) {
-        let item = (pageNumber-1)*2
+        let item = (pageNumber-1)*this.state.genresperpage;
         this.setState({ 
             activePage: pageNumber,
-            genres_mostrados: this.state.genres.slice(item, item+2)
+            genres_mostrados: this.state.genres.slice(item, item+this.state.genresperpage)
         });
     }
 
@@ -72,7 +73,7 @@ class Genres extends Component {
                 M.toast({ html: 'Género eliminado'});
                 this.setState({ activePage: 1 });
                 this.setState({ genres: data });
-                this.setState({ genres_mostrados: this.state.genres.slice(0,2) });
+                this.setState({ genres_mostrados: this.state.genres.slice(0,this.state.genresperpage) });
             })
             .catch(err => console.log(err));
     }
@@ -108,9 +109,9 @@ class Genres extends Component {
                             <div className="row center-align">
                                 <Pagination
                                     activePage={this.state.activePage}
-                                    itemsCountPerPage={2}
+                                    itemsCountPerPage={this.state.genresperpage}
                                     totalItemsCount={this.state.genres.length}
-                                    pageRangeDisplayed={(this.state.genres.length / 2) +1}
+                                    pageRangeDisplayed={(this.state.genres.length / this.state.genresperpage) +1}
                                     onChange={this.handlePageChange}
                                 />
                             </div>

@@ -14,7 +14,8 @@ class Books extends Component {
             username: '',
             books: [],
             books_mostrados: [],
-            activePage: 1
+            activePage: 1,
+            booksperpage: 5
         };
 
         this.handlePageChange = this.handlePageChange.bind(this);
@@ -30,8 +31,7 @@ class Books extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                if(data.msg.length == 0 && data.username == "admin") this.setState({username: data.username });
-                else location.href = "/index.html"
+                if(data.msg.length == 0) this.setState({username: data.username });
             })
             .catch(err => console.log(err));
 
@@ -44,17 +44,17 @@ class Books extends Component {
         })
             .then(res => res.json())
             .then(data => {
-                this.setState({ books: data.array });
-                this.setState({ books_mostrados: this.state.books.slice(0,2) });
+                this.setState({ books: data.array.reverse() });
+                this.setState({ books_mostrados: this.state.books.slice(0,this.state.booksperpage) });
             })
             .catch(err => console.log(err));
     }
 
     handlePageChange(pageNumber) {
-        let item = (pageNumber-1)*2
+        let item = (pageNumber-1)*this.state.booksperpage;
         this.setState({ 
             activePage: pageNumber,
-            books_mostrados: this.state.books.slice(item, item+2)
+            books_mostrados: this.state.books.slice(item, item+this.state.booksperpage)
         });
     }
 
@@ -72,7 +72,7 @@ class Books extends Component {
                 M.toast({ html: 'Libro eliminado'});
                 this.setState({ activePage: 1 });
                 this.setState({ books: data.array });
-                this.setState({ books_mostrados: this.state.books.slice(0,2) });
+                this.setState({ books_mostrados: this.state.books.slice(0,this.state.booksperpage) });
             })
             .catch(err => console.log(err));
     }
@@ -96,7 +96,14 @@ class Books extends Component {
                                             <a onClick={() => location.href = "/book_details.html?isbn=" + p.isbn } data-tip="Más detalle del libro"><i className="material-icons">add</i></a>
                                             <ReactTooltip place="left" type="dark" effect="solid"/>
                                             &nbsp; &nbsp; &nbsp; &nbsp;
-                                            <a onClick={() => this.removeBook(p.isbn)} data-tip="Quitar libro"><i className="material-icons">remove</i></a>
+                                            {(() => {
+                                                if(this.state.username == "admin") {
+                                                    return (
+                                                        <a onClick={() => this.removeBook(p.isbn)} data-tip="Quitar libro"><i className="material-icons">remove</i></a>
+                                                    
+                                                    )
+                                                }
+                                            })()}
                                         </div>
                                     </p>  
                                 </div>
@@ -111,9 +118,9 @@ class Books extends Component {
                             <div className="row center-align">
                                 <Pagination
                                     activePage={this.state.activePage}
-                                    itemsCountPerPage={2}
+                                    itemsCountPerPage={this.state.booksperpage}
                                     totalItemsCount={this.state.books.length}
-                                    pageRangeDisplayed={(this.state.books.length / 2) +1}
+                                    pageRangeDisplayed={(this.state.books.length / this.state.booksperpage) +1}
                                     onChange={this.handlePageChange}
                                 />
                             </div>

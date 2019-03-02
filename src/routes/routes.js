@@ -128,17 +128,16 @@ router.post('/book/signup', async (req,res) => {
             })
                 .then(res => res.json())
                 .then(async data => {
+                    const libro = new Book(); // Creo libro
                     if(data.totalItems == 0) {
                         if(req.body.chips_author.length == 0 || req.body.title.length == 0) res.json({ msg: 'No se han podido obtener los datos del libro con ese ISBN, por favor introduzcalos'});
                         else {
-                            const libro = new Book(); // Creo libro
-                
                             // Meto ya los datos obtenidos
                             libro.isbn = is;
                             libro.isbn13 = "";
                             libro.title = req.body.title;
                             libro.authors = req.body.chips_author;
-                            libro.numpages = req.body.numpages.length > 0 ? req.body.numpages : 0;
+                            libro.numpages = req.body.numpages != undefined ? req.body.numpages : 0;
 
                             // Se inserta la fecha de publicación, si se ha introducido
                             libro.publicationdate = req.body.publicationdate;
@@ -181,13 +180,9 @@ router.post('/book/signup', async (req,res) => {
 
                             // Guardo el libro
                             await libro.save();
-
-                            res.json({ isbn:is, msg: '' });
                         }
                     }
                     else {
-                        const libro = new Book(); // Creo libro
-                    
                         var isb;
 
                         // ISBN
@@ -215,7 +210,7 @@ router.post('/book/signup', async (req,res) => {
                         else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
                                 
                         // Número de páginas
-                        libro.numpages = req.body.numpages != undefined ? req.body.numpages : data.items[0].volumeInfo.pageCount;
+                        libro.numpages = req.body.numpages == undefined ? 0 : (req.body.numpages > 0 ? req.body.numpages : data.items[0].volumeInfo.pageCount);
 
                         // Fecha de publicación
                         libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
@@ -258,9 +253,19 @@ router.post('/book/signup', async (req,res) => {
                                 
                         // Guardo el libro
                         await libro.save();
-
-                        res.json({ isbn: isb, msg: '' });
                     }
+
+                    // Recomiendo este libro a usuarios aleatorios
+                    var users = await User.aggregate([{ $sample: {size: 5} }]);
+                    for(let i in users) {
+                        var u = await User.findById(users[i]._id);
+                        if(u.username != "admin") {
+                            await u.recomended_books.push(libro._id);
+                            await u.save();
+                        } 
+                    }
+
+                    res.json({ isbn: data.totalItems == 0 ? is : isb, msg: '' });
                 })
                 .catch(err => console.log(err));
         }

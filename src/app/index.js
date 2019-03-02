@@ -46,6 +46,8 @@ class Inicio extends Component {
                 this.setState({ noticias_mostradas: this.state.noticias.slice(0,2) });
             })
             .catch(err => console.log(err));
+
+        M.toast({ html: '<a href="books.html">Pinche aquí para ver los libros añadidos más recientemente.</a>'})
     }
 
     handlePageChange(pageNumber) {
