@@ -70,9 +70,9 @@ class Books extends Component {
             .then(res => res.json())
             .then(data => {
                 M.toast({ html: 'Libro eliminado'});
-                this.setState({ activePage: 1 });
-                this.setState({ books: data.array });
-                this.setState({ books_mostrados: this.state.books.slice(0,this.state.booksperpage) });
+                
+                // Espera a la redirección para que se vea el mensaje de arriba
+                setTimeout(() => location.href = 'books.html', 1000);
             })
             .catch(err => console.log(err));
     }

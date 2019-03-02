@@ -359,7 +359,13 @@ class BookDetails extends Component {
                         <h3>
                             {this.state.titulo}
                             &nbsp;
-                            <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                            {(() => {
+                                if(this.state.username != "admin") {
+                                    return (
+                                        <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                                    )
+                                }
+                            })()}
                         </h3>
 
                         {(() => {
@@ -387,7 +393,13 @@ class BookDetails extends Component {
                         <h4 className="center-align">
                             {this.state.titulo}
                             &nbsp;
-                            <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                            {(() => {
+                                if(this.state.username != "admin") {
+                                    return (
+                                        <a href={"book_edit.html?isbn=" + this.state.isbn} className="tooltipped" data-position="right" data-delay="50" data-tooltip="Modificar Libro"><i className="material-icons">book</i></a> 
+                                    )
+                                }
+                            })()} 
                         </h4>
                     </div>
                         <div className="row center-align">

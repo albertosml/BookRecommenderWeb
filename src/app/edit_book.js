@@ -83,9 +83,9 @@ class EditBook extends Component {
                 });
 
                 if(data.data[0].publicationdate != undefined) this.setState({ publicationdate_old: data.data[0].publicationdate });
-                if(data.data[0].url.length > 0) this.setState({ url_old: data.data[0].url });
-                if(data.data[0].publisher.length > 0) this.setState({ publisher_old: data.data[0].publisher });
-                if(data.data[0].language.length > 0) this.setState({ language_old: data.data[0].language });
+                if(data.data[0].url.length != undefined) this.setState({ url_old: data.data[0].url });
+                if(data.data[0].publisher.length != undefined) this.setState({ publisher_old: data.data[0].publisher });
+                if(data.data[0].language.length != undefined) this.setState({ language_old: data.data[0].language });
             })   
             .catch(err => console.log(err));
     }
