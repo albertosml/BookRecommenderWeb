@@ -87,7 +87,7 @@ class NewSession extends Component {
                         <form onSubmit={this.startSession}>
                             <div className="row">
                                 <div className="input-field col s12">
-                                    <label className="active" htmlFor="username">Nombre de usuario</label>
+                                    <label className="active" htmlFor="username">Nombre de usuario/Email</label>
                                     <input placeholder="" type="text" name="username" className="materialize-textarea" value={this.state.username} onChange={this.handleChange} /> 
                                 </div>
                             </div>

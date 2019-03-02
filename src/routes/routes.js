@@ -257,9 +257,10 @@ router.post('/book/signup', async (req,res) => {
 
                     // Recomiendo este libro a usuarios aleatorios
                     var users = await User.aggregate([{ $sample: {size: 5} }]);
+                    var ses = await User.find({ username: req.session.username }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
                     for(let i in users) {
                         var u = await User.findById(users[i]._id);
-                        if(u.username != "admin") {
+                        if(u.username != "admin" && u.username != ses.username) {
                             await u.recomended_books.push(libro._id);
                             await u.save();
                         } 
@@ -399,13 +400,13 @@ router.post('/user/profile', async (req,res) => {
 router.post('/users/signin', async (req,res) => {
     if(req.body.username.length > 0) { // Comprobar username
         // Compruebo si existe ese nombre de usuario, en caso afirmativo, se sigue comprobando
-        const username = await User.find({username: req.body.username});
-        if(username.length > 0) {
+        const u = await User.findOne({ $or : [ {username: req.body.username}, {email: req.body.username} ] });
+        if(u != null) {
             // Compruebo que se haya introducido la contraseña
             if(req.body.password.length > 0) { 
                 // Comprobamos que la contraseña es la correcta, si lo es, redireccionamos a la página de inicio, si no, notificamos el error
-                if(crypto.createHmac('sha1', req.body.username).update(req.body.password).digest('hex') === username[0].password) {
-                    req.session.username = req.body.username;
+                if(crypto.createHmac('sha1', u.username).update(req.body.password).digest('hex') === u.password) {
+                    req.session.username = u.username;
                     
                     // Las sesiones se mantendrán almacenadas como mucho 1 hora
                     req.session.cookie.expires = new Date(Date.now() + 3600000);
@@ -413,13 +414,13 @@ router.post('/users/signin', async (req,res) => {
                     
                     res.json({msg: ''});
                 }
-                else res.json({msg: 'Nombre de usuario y/o contraseña incorrectos'});
+                else res.json({msg: 'Nombre de usuario/Email y/o contraseña incorrectos'});
             }
             else res.json({msg: 'Contraseña no introducida'});
         }
-        else res.json({msg: 'Nombre de usuario y/o contraseña incorrectos'});
+        else res.json({msg: 'Nombre de usuario/Email y/o contraseña incorrectos'});
     }
-    else res.json({msg: 'Nombre de usuario no introducido'});
+    else res.json({msg: 'Nombre de usuario o email no introducido'});
 });
 
 router.post('/users/signup', async (req,res) => {
