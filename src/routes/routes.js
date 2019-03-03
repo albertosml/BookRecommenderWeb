@@ -137,7 +137,7 @@ router.post('/book/signup', async (req,res) => {
                             libro.isbn13 = "";
                             libro.title = req.body.title;
                             libro.authors = req.body.chips_author;
-                            libro.numpages = req.body.numpages != undefined ? req.body.numpages : 0;
+                            libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : 0;
 
                             // Se inserta la fecha de publicación, si se ha introducido
                             libro.publicationdate = req.body.publicationdate;
@@ -210,7 +210,7 @@ router.post('/book/signup', async (req,res) => {
                         else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
                                 
                         // Número de páginas
-                        libro.numpages = req.body.numpages == undefined ? 0 : (req.body.numpages > 0 ? req.body.numpages : data.items[0].volumeInfo.pageCount);
+                        libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : (data.items[0].volumeInfo.pageCount != undefined ? data.items[0].volumeInfo.pageCount : 0);
 
                         // Fecha de publicación
                         libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
