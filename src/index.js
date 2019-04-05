@@ -27,5 +27,5 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Starting the server
 app.listen(app.get('port'), () => {
-    console.log('Servidor iniciado');
+    console.log(`Servidor iniciado ${app.get('port')}`);
 });

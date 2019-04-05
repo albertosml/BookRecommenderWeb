@@ -8,7 +8,6 @@ import StarRatings from 'react-star-ratings';
 import Pagination from 'react-js-pagination';
 import ReactTooltip from 'react-tooltip';
 import Chart from "react-google-charts";
-import { NotificationPhoneBluetoothSpeaker } from 'material-ui/svg-icons';
 
 class BookDetails extends Component {
     constructor() {

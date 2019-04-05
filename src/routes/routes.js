@@ -257,7 +257,8 @@ router.post('/book/signup', async (req,res) => {
 
                     // Recomiendo este libro a usuarios aleatorios
                     var users = await User.aggregate([{ $sample: {size: 5} }]);
-                    var ses = await User.findOne({ username: req.session.username }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
+                    var user = req.session.username != undefined ? req.session.username : req.body.username;
+                    var ses = await User.findOne({ username: user }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
                     for(let i in users) {
                         var u = await User.findById(users[i]._id);
 
@@ -307,8 +308,9 @@ router.get('/user', async (req,res) => {
     else res.json({ msg: 'Usuario no encontrado'})
 });
 
-router.get('/user/data', async (req,res) => {
-    const username = await User.find({username: req.session.username});
+router.post('/user/data', async (req,res) => {
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    const username = await User.find({username: usuario});
     if(username.length > 0) {
         const array = [];
         // Me recorro los géneros y obtengo los nombres
@@ -327,12 +329,14 @@ router.get('/user/data', async (req,res) => {
 });
 
 router.post('/user/profile', async (req,res) => {
+    var usuario_sesion = req.session.username != undefined ? req.session.username : req.body.username;
+
     // El usuario administrador no puede cambiarse el nombre de usuario, lo comprobamos 
-    if(req.body.username.length > 0 && req.session.username == "admin") return res.json({ msg: 'El administrador no puede cambiarse el nombre de usuario'});
+    if(req.body.username_old != "admin" && req.body.username.length > 0) return res.json({ msg: 'El administrador no puede cambiarse el nombre de usuario'});
 
     var cambiado = false;
     // Obtengo el usuario de la sesión
-    const user = await User.findOne({username: req.session.username});
+    const user = await User.findOne({username: usuario_sesion});
     if(user != null) {
         // Si se ha introducido un nombre de usuario distinto, se actualiza si se puede
         if(req.body.username.length > 0 && req.body.username != req.body.username_old) {
@@ -489,7 +493,8 @@ router.post('/theme/signup', async (req,res) => {
     if(req.body.title.length > 0) { // Compruebo si aparece el título
         if(req.body.description.length > 0) { // Compruebo si aparece la descripción
             // Busco el usuario que ha creado el tema
-            const usuario = await User.findOne({username: req.session.username});
+            var user = req.session.username != undefined ? req.session.username : req.body.username;
+            const usuario = await User.findOne({username: user});
 
             // Creo el tema e inserto los datos
             const tema = new Theme();
@@ -517,7 +522,8 @@ router.post('/comment/signup', async (req,res) => {
         const tema = await Theme.findById(req.body.temaid);
 
         // Obtengo objeto usuario
-        const user = await User.findOne({ username: req.session.username });
+        var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+        const user = await User.findOne({ username: usuario });
 
         if(tema != null && user != null) {
             tema.comments.push({
@@ -541,7 +547,8 @@ router.post('/valoration/signup', async (req,res) => {
             var book = await Book.findOne({ isbn: req.body.isbn});
 
             // Obtengo objeto usuario
-            var user = await User.findOne({ username: req.session.username });
+            var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+            var user = await User.findOne({ username: usuario });
 
             if(book != null && user != null) {
                 var valoration = new Valoration();
@@ -564,12 +571,13 @@ router.post('/valoration/signup', async (req,res) => {
 router.post('/canvalorate', async (req,res) => {
     // Puede valorar si ha registrado el libro como leído
     var b = await Book.findOne({ isbn: req.body.isbn });
-    var user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: b._id}} });
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario, readed_books: {$elemMatch: {_id: b._id}} });
     
     if(user == null) res.json({ canvalorate: false });
     else {
         // Compruebo si el usuario ya ha valorado ese libro
-        user = await User.findOne({ username: req.session.username });
+        user = await User.findOne({ username: usuario });
         var val = await Valoration.findOne({ book: b._id, user: user._id });
         
         if(val == null) res.json({ canvalorate: true });
@@ -584,7 +592,8 @@ router.post('/valorations', async (req,res) => {
     var valorations, numValorations;
     // Distingo para obtener las valoraciones de un libro o de un usuario
     if(req.body.isbn == null) {
-        var user = await User.findOne({ username: req.session.username });
+        var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+        var user = await User.findOne({ username: usuario });
         valorations = await Valoration.find({ user: user._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
    
         // Cuento el número de valoraciones totales
@@ -631,7 +640,8 @@ router.post('/valorations', async (req,res) => {
 router.post('/recomendedbooks', async (req,res) => {
     var array = [];
 
-    var user = await User.findOne({ username: req.session.username }); 
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario }); 
 
     for(let i in user.recomended_books) {
         var book = await Book.findOne({ _id: user.recomended_books[i]._id});
@@ -650,7 +660,8 @@ router.post('/recomendedbooks', async (req,res) => {
 router.post('/removerecomendedbook', async (req,res) => {
     var array = [];
 
-    var user = await User.findOne({ username: req.session.username }); 
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario }); 
     var b = await Book.findOne({ isbn: req.body.isbn });
 
     let pos;
@@ -678,7 +689,8 @@ router.post('/removerecomendedbook', async (req,res) => {
 router.post('/readedbooks', async (req,res) => {
     var array = [];
 
-    var user = await User.findOne({ username: req.session.username }); 
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario }); 
 
     for(let i in user.readed_books) {
         var book = await Book.findOne({ _id: user.readed_books[i]._id});
@@ -700,7 +712,8 @@ router.post('/readedbooks', async (req,res) => {
 router.post('/pendingbooks', async (req,res) => {
     var array = [];
 
-    var user = await User.findOne({ username: req.session.username }); 
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario }); 
 
     for(let i in user.pending_books) {
         var book = await Book.findOne({ _id: user.pending_books[i]._id});
@@ -719,7 +732,8 @@ router.post('/pendingbooks', async (req,res) => {
 router.post('/removependingbook', async (req,res) => {
     var array = [];
 
-    var user = await User.findOne({ username: req.session.username }); 
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;              
+    var user = await User.findOne({ username: usuario }); 
     var b = await Book.findOne({ isbn: req.body.isbn });
 
     let pos;
@@ -746,17 +760,18 @@ router.post('/removependingbook', async (req,res) => {
 
 router.post('/addreadedbook', async (req,res) => {
     var book = await Book.findOne({ isbn: req.body.isbn });
-    var user = await User.findOne({ username: req.session.username, pending_books: {$elemMatch: {_id: book._id}} });
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario, pending_books: {$elemMatch: {_id: book._id}} });
 
     if(user == null) {
-        user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: book._id}} });
+        user = await User.findOne({ username: usuario, readed_books: {$elemMatch: {_id: book._id}} });
 
         if(user == null) {
-            user = await User.findOne({ username: req.session.username, recomended_books: {$elemMatch: {_id: book._id}} });
+            user = await User.findOne({ username: usuario, recomended_books: {$elemMatch: {_id: book._id}} });
 
             if(user == null) {
                 // Añado el libro como pendiente
-                user = await User.findOne({ username: req.session.username });
+                user = await User.findOne({ username: usuario });
                 user.readed_books.push(book._id);
                 await user.save();
 
@@ -840,17 +855,18 @@ router.post('/themes', async (req,res) => {
 
 router.post('/newpendingbook', async (req,res) => {
     var book = await Book.findOne({ isbn: req.body.isbn });
-    var user = await User.findOne({ username: req.session.username, pending_books: {$elemMatch: {_id: book._id}} });
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario, pending_books: {$elemMatch: {_id: book._id}} });
 
     if(user == null) {
-        user = await User.findOne({ username: req.session.username, readed_books: {$elemMatch: {_id: book._id}} });
+        user = await User.findOne({ username: usuario, readed_books: {$elemMatch: {_id: book._id}} });
 
         if(user == null) {
-            user = await User.findOne({ username: req.session.username, recomended_books: {$elemMatch: {_id: book._id}} });
+            user = await User.findOne({ username: usuario, recomended_books: {$elemMatch: {_id: book._id}} });
 
             if(user == null) {
                 // Añado el libro como pendiente
-                user = await User.findOne({ username: req.session.username });
+                user = await User.findOne({ username: usuario });
                 user.pending_books.push(book._id);
                 await user.save();
 
@@ -868,13 +884,15 @@ router.post('/givelike', async (req,res) => {
     var val = await Valoration.findOne({ _id: req.body.valorationid }); 
     var user = await User.findOne({ _id: val.user });
 
-    if(user.username == req.session.username) {
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+                    
+    if(user.username == usuario) {
         if(req.body.like) res.json({ msg: 'Un usuario no puede darle a \'Me gusta\' a una valoración creada por él/ella.'});
         else res.json({ msg: 'Un usuario no puede darle a \'No me gusta\' a una valoración creada por él/ella.'});
     }
     else {
         // Compruebo que el usuario no le haya dado a like o dislike a esta valoración
-        user = await User.findOne({ username: req.session.username });
+        user = await User.findOne({ username: usuario });
 
         var valo;
         if(req.body.like) valo = await Valoration.findOne({ _id: req.body.valorationid, likes: {$elemMatch: { _id: user._id}} });

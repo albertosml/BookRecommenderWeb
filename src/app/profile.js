@@ -71,7 +71,7 @@ class Perfil extends Component {
             .catch(err => console.log(err));
 
         fetch('/user/data',{
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
