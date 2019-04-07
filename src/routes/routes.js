@@ -594,17 +594,35 @@ router.post('/valorations', async (req,res) => {
     if(req.body.isbn == null) {
         var usuario = req.session.username != undefined ? req.session.username : req.body.username;
         var user = await User.findOne({ username: usuario });
-        valorations = await Valoration.find({ user: user._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
-   
-        // Cuento el número de valoraciones totales
-        numValorations = await Valoration.find({ user: user._id }).countDocuments();
+        
+        if(req.body.currentPage == undefined) {
+            valorations = await Valoration.find({ user: user._id }).sort({ datetime: -1});
+    
+            // Cuento el número de valoraciones totales
+            numValorations = valorations.length;
+        }
+        else {
+            valorations = await Valoration.find({ user: user._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+            // Cuento el número de valoraciones totales
+            numValorations = await Valoration.find({ user: user._id }).countDocuments();
+        }
     }
     else {
         var book = await Book.findOne({isbn: req.body.isbn });
-        valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+        
+        if(req.body.currentPage == undefined) {
+            valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1});
     
-        // Cuento el número de valoraciones totales
-        numValorations = await Valoration.find({ book: book._id }).countDocuments();
+            // Cuento el número de valoraciones totales
+            numValorations = valorations.length;
+        }
+        else {
+            valorations = await Valoration.find({ book: book._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+            // Cuento el número de valoraciones totales
+            numValorations = await Valoration.find({ book: book._id }).countDocuments();
+        }
 
         for(let i=1;i<=5;i++) num_valo.push(await Valoration.find({ book: book._id, note:i }).countDocuments());
     }
@@ -789,17 +807,34 @@ router.post('/themes', async (req,res) => {
 
     var temas, numthemes;
     if(req.body.book == null) {
-        temas = await Theme.find({ book: null }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+        if(req.body.currentPage == undefined) {
+            temas = await Theme.find({ book: null }).sort({ datetime: -1});
     
-        // Cuento el número de temas totales
-        numthemes = await Theme.find({ book: null }).countDocuments();
+            // Cuento el número de temas totales
+            numthemes = temas.length;
+        }
+        else {
+            temas = await Theme.find({ book: null }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+            // Cuento el número de temas totales
+            numthemes = await Theme.find({ book: null }).countDocuments();
+        }
     }
     else {
         var b = await Book.findOne({ isbn: req.body.book });
-        temas = await Theme.find({ book: b._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+
+        if(req.body.currentPage == undefined) {
+            temas = await Theme.find({ book: b._id }).sort({ datetime: -1});
     
-        // Cuento el número de temas totales
-        numthemes = await Theme.find({ book: b._id }).countDocuments();
+            // Cuento el número de temas totales
+            numthemes = temas.length;
+        }
+        else {
+            temas = await Theme.find({ book: b._id }).sort({ datetime: -1}).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+            // Cuento el número de temas totales
+            numthemes = await Theme.find({ book: b._id }).countDocuments();
+        }
     }
 
     for(let i in temas) {
@@ -980,7 +1015,10 @@ router.post('/suggestions', async (req,res) => {
     var array = [];
 
     var user = await User.findOne({ username: "admin" });
-    var suggestions = await Suggestion.find({ user: { $not: { $eq: user._id } } }).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
+    
+    var suggestions;
+    if(req.body.currentPage == undefined) suggestions = await Suggestion.find({ user: { $not: { $eq: user._id } } });
+    else suggestions = await Suggestion.find({ user: { $not: { $eq: user._id } } }).skip(parseInt((req.body.currentPage-1)*2)).limit(2);
    
     // Cuento el número de valoraciones totales
     var numSuggestions = await Suggestion.find().countDocuments({ user: { $not: { $eq: user._id } } });
