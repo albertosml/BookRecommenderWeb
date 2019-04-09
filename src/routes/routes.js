@@ -329,7 +329,7 @@ router.post('/user/data', async (req,res) => {
 });
 
 router.post('/user/profile', async (req,res) => {
-    var usuario_sesion = req.session.username != undefined ? req.session.username : req.body.username;
+    var usuario_sesion = req.session.username != undefined ? req.session.username : req.body.username_old;
 
     // El usuario administrador no puede cambiarse el nombre de usuario, lo comprobamos 
     if(req.body.username_old == "admin" && req.body.username.length > 0) return res.json({ msg: 'El administrador no puede cambiarse el nombre de usuario'});
