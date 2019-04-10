@@ -258,14 +258,27 @@ router.post('/book/signup', async (req,res) => {
                     // Recomiendo este libro a usuarios aleatorios
                     var users = await User.aggregate([{ $sample: {size: 5} }]);
                     var user = req.session.username != undefined ? req.session.username : req.body.username;
-                    var ses = await User.findOne({ username: user }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
-                    for(let i in users) {
-                        var u = await User.findById(users[i]._id);
+                    
+                    if(user.length > 0) {
+                        var ses = await User.findOne({ username: user }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
+                        for(let i in users) {
+                            var u = await User.findById(users[i]._id);
 
-                        if(u.username != "admin" && u.username != ses.username) {
-                            await u.recomended_books.push(libro._id);
-                            await u.save();
-                        } 
+                            if(u.username != "admin" && u.username != ses.username) {
+                                await u.recomended_books.push(libro._id);
+                                await u.save();
+                            } 
+                        }
+                    }
+                    else {
+                        for(let i in users) {
+                            var u = await User.findById(users[i]._id);
+                            
+                            if(u.username != "admin") {
+                                await u.recomended_books.push(libro._id);
+                                await u.save();
+                            } 
+                        }
                     }
 
                     res.json({ isbn: data.totalItems == 0 ? is : isb, msg: '' });
