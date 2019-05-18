@@ -23,25 +23,29 @@ const Similarity = require('../models/similarity');
 const Classifier = require('../models/classifier');
 
 // Functions
+function filtrarAcentos(nombre) {
+    // Filtro acentos
+    nombre = nombre.replace(/á/gi,"a");
+    nombre = nombre.replace(/é/gi,"e");
+    nombre = nombre.replace(/í/gi,"i");
+    nombre = nombre.replace(/ó/gi,"o");
+    nombre = nombre.replace(/ú/gi,"u");
+    nombre = nombre.replace(/ü/gi,"u");
+    nombre = nombre.replace(/Á/gi,"A");
+    nombre = nombre.replace(/É/gi,"E");
+    nombre = nombre.replace(/Í/gi,"I");
+    nombre = nombre.replace(/Ó/gi,"O");
+    nombre = nombre.replace(/Ú/gi,"U");
+    nombre = nombre.replace(/Ü/gi,"U");
+
+    return nombre;
+}
+
 function filtrarGenero(nombre) {
     // Filtro mayúsculas y minúsculas
     nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1).toLowerCase();
 
-    // Filtro acentos
-    nombre = nombre.replace("á","a");
-    nombre = nombre.replace("é","e");
-    nombre = nombre.replace("í","i");
-    nombre = nombre.replace("ó","o");
-    nombre = nombre.replace("ú","u");
-    nombre = nombre.replace("ü","u");
-    nombre = nombre.replace("Á","A");
-    nombre = nombre.replace("É","E");
-    nombre = nombre.replace("Í","I");
-    nombre = nombre.replace("Ó","O");
-    nombre = nombre.replace("Ú","U");
-    nombre = nombre.replace("Ü","U");
-
-    return nombre;
+    return filtrarAcentos(nombre);
 }
 
 function calculaSimilitud(ar1, ar2) {
@@ -1566,6 +1570,9 @@ router.post('/dosearch', async (req,res) => {
                         + '\" OR title:\"' + search_text + '\" OR authors:\"' + search_text 
                         + '\" OR publisher:\"' + search_text + '\" OR genres:\"' + search_text
                         + '\" OR language:\"' + search_text + '\"';
+        
+        // Filtro los acentos de la consulta, debido a un problema con la petición
+        consulta = filtrarAcentos(consulta);
 
         client.search(consulta, async function(err, result) {
             if(err) {
