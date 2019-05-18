@@ -3,6 +3,14 @@ const router = express.Router();
 const crypto = require('crypto');
 const fetch = require("node-fetch");
 const nodemailer = require("nodemailer");
+const bayes = require('bayes');
+const SolrNode = require('solr-node');
+const client = new SolrNode({
+    host: '35.180.69.250',
+    port: '8983',
+    core: 'books',
+    protocol: 'http'
+});
 
 // Models
 const Genre = require('../models/genre');
@@ -11,6 +19,8 @@ const Book = require('../models/book');
 const Theme = require('../models/theme');
 const Valoration = require('../models/valoration');
 const Suggestion = require('../models/suggestion');
+const Similarity = require('../models/similarity');
+const Classifier = require('../models/classifier');
 
 // Functions
 function filtrarGenero(nombre) {
@@ -32,6 +42,240 @@ function filtrarGenero(nombre) {
     nombre = nombre.replace("Ü","U");
 
     return nombre;
+}
+
+function calculaSimilitud(ar1, ar2) {
+    if(ar1.length == 0) return 0;
+    else if(ar1.length == 1) {
+        var diferencia = Math.abs(ar1[0] - ar2[0]);
+        if(diferencia == 0) return 1;
+        else if(diferencia == 1) return 0.5;
+        else if(diferencia == 2) return 0;
+        else if(diferencia == 3) return -0.5;
+        else return -1;
+    }
+    else {
+        // Calculo correlación pearson
+
+        // 1) Calculo medias ar1 y ar2
+        var media1 = 0;
+        var media2 = 0;
+
+        for(let i in ar1) {
+            media1 += ar1[i];
+            media2 += ar2[i];
+        } 
+
+        media1 /= ar1.length;
+        media2 /= ar2.length;
+
+        // 2) Calculo numerador correlación pearson
+        var num = 0;
+        for(let i in ar1) num += ((ar1[i] - media1)*(ar2[i]- media2));
+
+        // 3) Calculo denominador correlación pearson
+        var den1 = 0;
+        var den2 = 0;
+        for(let i in ar1) {
+            den1 += Math.pow(ar1[i] - media1, 2);
+            den2 += Math.pow(ar2[i] - media2, 2);
+        }
+        
+        var den = Math.sqrt(den1) * Math.sqrt(den2);
+
+        // 4) Calculo resultado correlación pearson
+        var resultado = num/den;
+
+        if(isNaN(resultado)) {
+            // Si es NaN, procedo a calcular la correlación pearson
+            
+            // 1) Calculo numerador
+            num = 0;
+
+            for(let i in ar1) num += (ar1[i] * ar2[i]);
+
+            // 2) Calcula denominador
+            den1 = 0;
+            den2 = 0;
+
+            for(let i in ar1) {
+                den1 += Math.pow(ar1[i], 2);
+                den2 += Math.pow(ar2[i], 2);
+            }
+
+            den = Math.sqrt(den1) * Math.sqrt(den2);
+
+            // 3) Calculo resultado
+            return num/den;
+        }
+        else return resultado;
+    }
+}
+
+async function obtenerComunes(id1, id2) {
+    var ar1 = await Valoration.find({ user: id1 });
+    var ar2 = await Valoration.find({ user: id2 });
+
+    var array1 = [];
+    var array2 = [];
+
+    // Obtenemos las valoraciones comunes
+    for(let i in ar1) {
+        for(let j=(parseInt(i)+1);j<ar2.length;j++) {
+            if(ar1[i].book.toString() == ar2[j].book.toString()) {
+                array1.push(ar1[i].note);
+                array2.push(ar2[i].note);
+            }
+        }
+    }
+
+    return { 'array1': array1, 'array2': array2 };
+}
+
+async function obtenerSimilitudes(usuarios, user_id) {
+    for(let i in usuarios) {
+        var obj = await obtenerComunes(user_id, usuarios[i]._id);
+
+        let simi = await Similarity.findOne({ $or: [ { user1: user_id, user2: usuarios[i]._id }, { user2: user_id, user1: usuarios[i]._id } ] });
+        if(simi == null) {
+            let sim_new = new Similarity();
+            sim_new.user1 = user_id;
+            sim_new.user2 = usuarios[i]._id;
+            sim_new.sim = calculaSimilitud(obj.array1, obj.array2);
+
+            await sim_new.save();
+        }
+        else {
+            simi.sim = calculaSimilitud(obj.array1, obj.array2);
+            await simi.save();
+        }
+    }
+}
+
+async function obtenerLibrosRecomendados(usuario_activo, vecinos) {
+    var valoraciones_ua = await Valoration.find({ user: usuario_activo });
+    
+    var libros_no_comunes = [];
+    var media_vecinos = [];
+    var c = 0; // Constante c predicción
+
+    // Obtengo libros no comunes
+    for(let i in vecinos) {
+        c += Math.abs(vecinos[i].sim);
+        
+        let vecino_id = vecinos[i].user1.toString() == usuario_activo.toString() ? vecinos[i].user2 : vecinos[i].user1;
+        let valoraciones_vecino = await Valoration.find({ user: vecino_id });
+        
+        media_vecinos[vecino_id] = 0;
+        
+        for(let j in valoraciones_vecino) {
+            var encontrado = valoraciones_ua.find(function(element) {
+                return element.book.toString() == valoraciones_vecino[j].book.toString();
+            });
+
+            // Si ese libro no ha sido leído por el usuario activo, lo añado
+            if(encontrado == undefined) {
+                let book = valoraciones_vecino[j].book.toString();
+                if(libros_no_comunes[book] == undefined) {
+                    libros_no_comunes[book] = [{ note: valoraciones_vecino[j].note, similitud: vecinos[i].sim, vecino: vecino_id }];
+                }
+                else libros_no_comunes[book].push({ note: valoraciones_vecino[j].note, similitud: vecinos[i].sim, vecino: vecino_id }); 
+            }
+
+            media_vecinos[vecino_id] += valoraciones_vecino[j].note;
+        }
+
+        media_vecinos[vecino_id] /= valoraciones_vecino.length;
+    }
+     
+    c = 1/c;
+
+    // Para cada ítem, calculo la predicción
+    var libros = [];
+
+    // Media valoraciones usuario activo
+    var media_u = 0;
+    for(let k in valoraciones_ua) media_u += valoraciones_ua[k].note;
+    media_u /= valoraciones_ua.length;
+
+    for(let i in libros_no_comunes) {
+        var sum = 0;
+
+        for(let j in libros_no_comunes[i]) {
+            sum += (libros_no_comunes[i][j].similitud * (libros_no_comunes[i][j].note - media_vecinos[libros_no_comunes[i][j].vecino])); 
+        }
+
+        var estimacion = media_u + c * sum;
+
+        if(estimacion > 4 && !libros.includes(i)) libros.push(i);
+    }
+
+    return libros;
+}
+
+async function devolverRecomendacion(user, libros, res) {
+    // Añado el libro a la lista de recomendados (hasta 3 libros)
+    let cont = 0;
+
+    for(let i in libros) {
+        let pert = await User.findOne({ _id: user._id, $or: [ { readed_books: {$elemMatch: {_id: libros[i]} } }, { pending_books: {$elemMatch: {_id: libros[i]} } }, { recomended_books: {$elemMatch: {_id: libros[i]} } } ] });
+        if(cont == 3) break;
+        else if(pert == null) {
+            user.recomended_books.push(libros[i]);
+            await user.save();
+
+            cont++;
+        }
+    }
+
+    if(res != null) {
+        // Devuelvo los libros recomendados del usuario
+        var array = [];
+
+        for(let i in user.recomended_books) {
+            var book = await Book.findOne({ _id: user.recomended_books[i]._id});
+
+            if(book != null) {
+                array.push({ 
+                    isbn: book.isbn,
+                    title: book.title
+                });
+            }
+        }
+
+        res.json({ array: array, cont: cont, msg: '' });
+    }
+}
+
+async function recomendacionPorGeneros(user, res = null) {
+    // Obtengo libros recomendados
+    var libros = [];
+
+    // Preparo consulta
+    var consulta = 'q=';
+    for(let i in user.favouritesgenres) {
+        let genre = await Genre.findOne({ _id: user.favouritesgenres[i]._id });
+        if(genre != null) consulta += ('genres:\"' + genre.name + '\" OR '); 
+    }
+
+    consulta = consulta.substring(0, consulta.length - 4); // Quito el último OR
+
+    client.search(consulta, async function(err, result) {
+        if(err) {
+            console.log(err);
+            res.json({ msg: 'Problema al hacer la recomendación' });
+            return;
+        }
+
+        for(let i in result.response.docs) {
+            libros.push(result.response.docs[i].id);
+        }
+
+        // Devuelvo los libros recomendados del usuario
+        var array = [];
+
+        devolverRecomendacion(user, libros, res);
+    });
 }
 
 // Routes
@@ -119,41 +363,116 @@ router.post('/book/signup', async (req,res) => {
         // Compruebo si existe un libro con ese ISBN
         const isbn = await Book.find({ $or : [ {isbn: is}, {isbn13: is} ] });
         if(isbn.length == 0) {
-        	fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + is,{
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(res => res.json())
-                .then(async data => {
-                    const libro = new Book(); // Creo libro
-                    if(data.totalItems == 0) {
-                        if(req.body.chips_author.length == 0 || req.body.title.length == 0) res.json({ msg: 'No se han podido obtener los datos del libro con ese ISBN, por favor introduzcalos'});
+            // Compruebo si se han introducido los géneros del libro
+            if(req.body.chips.length > 0) {
+                fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:' + is,{
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(async data => {
+                        const libro = new Book(); // Creo libro
+                        if(data.totalItems == 0) {
+                            if(req.body.chips_author.length == 0 || req.body.title.length == 0) res.json({ msg: 'No se han podido obtener los datos del libro con ese ISBN, por favor introduzcalos'});
+                            else {
+                                // Meto ya los datos obtenidos
+                                libro.isbn = is;
+                                libro.isbn13 = "";
+                                libro.title = req.body.title;
+                                libro.authors = req.body.chips_author;
+                                libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : 0;
+
+                                // Se inserta la fecha de publicación, si se ha introducido
+                                libro.publicationdate = req.body.publicationdate;
+
+                                // Se inserta una url de referencia, si se ha introducido
+                                libro.url = req.body.url;
+
+                                // Se inserta la editorial, si se ha introducido
+                                libro.publisher = req.body.publisher;
+
+                                // Se inserta el idioma, si se ha introducido
+                                libro.language = req.body.language;
+
+                                // Si se han introducido géneros, se insertan 
+                                if(req.body.chips.length > 0) {
+                                    libro.genres = [];
+                                    for(let i in req.body.chips) {
+                                        var nombre = filtrarGenero(req.body.chips[i]);
+                                        const genero = await Genre.find({name: nombre});
+                                        if(genero.length > 0) {
+                                            // Obtengo id y lo inserto
+                                            await libro.genres.push(genero[0]._id);
+                                        }
+                                        else {
+                                            // Creo el género
+                                            var g = new Genre();
+                                            g.name = nombre;
+                        
+                                            await g.save();
+                        
+                                            // Obtengo el id y lo inserto
+                                            const genero = await Genre.find({name: nombre});
+                                            if(genero.length > 0) await libro.genres.push(genero[0]._id);
+                                        }    
+                                    }   
+                                }
+
+                                // Si se ha subido una imagen, la almaceno
+                                libro.image = req.body.image;
+
+                                // Guardo el libro
+                                await libro.save();
+                            }
+                        }
                         else {
-                            // Meto ya los datos obtenidos
-                            libro.isbn = is;
-                            libro.isbn13 = "";
-                            libro.title = req.body.title;
-                            libro.authors = req.body.chips_author;
-                            libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : 0;
+                            var isb;
 
-                            // Se inserta la fecha de publicación, si se ha introducido
-                            libro.publicationdate = req.body.publicationdate;
+                            // ISBN
+                            if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_10") {
+                                libro.isbn = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
+                                libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
+                                isb = libro.isbn;
+                            }
+                            else if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_13") {
+                                libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
+                                libro.isbn = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
+                                isb = libro.isbn;
+                            }
+                            else {
+                                libro.isbn = is;
+                                isb = libro.isbn;
+                            }
 
-                            // Se inserta una url de referencia, si se ha introducido
-                            libro.url = req.body.url;
+                            // Título
+                            libro.title = req.body.title.length > 0 ? req.body.title : data.items[0].volumeInfo.title;
+                                    
+                            // Autores
+                            libro.authors = [];
+                            if(req.body.chips_author.length > 0) libro.authors = req.body.chips_author;
+                            else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
+                                    
+                            // Número de páginas
+                            libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : (data.items[0].volumeInfo.pageCount != undefined ? data.items[0].volumeInfo.pageCount : 0);
 
-                            // Se inserta la editorial, si se ha introducido
-                            libro.publisher = req.body.publisher;
+                            // Fecha de publicación
+                            libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
 
-                            // Se inserta el idioma, si se ha introducido
-                            libro.language = req.body.language;
+                            // URL
+                            libro.url = req.body.url.length > 0 ? req.body.url : data.items[0].volumeInfo.previewLink;
+
+                            // Editorial
+                            libro.publisher = req.body.publisher.length > 0 ? req.body.publisher : data.items[0].volumeInfo.publisher;
+
+                            // Idioma
+                            libro.language = req.body.language.length > 0 ? req.body.language : data.items[0].volumeInfo.language.toUpperCase();
 
                             // Si se han introducido géneros, se insertan 
+                            libro.genres = [];                      
                             if(req.body.chips.length > 0) {
-                                libro.genres = [];
                                 for(let i in req.body.chips) {
                                     var nombre = filtrarGenero(req.body.chips[i]);
                                     const genero = await Genre.find({name: nombre});
@@ -177,113 +496,42 @@ router.post('/book/signup', async (req,res) => {
 
                             // Si se ha subido una imagen, la almaceno
                             libro.image = req.body.image;
-
+                                    
                             // Guardo el libro
                             await libro.save();
                         }
-                    }
-                    else {
-                        var isb;
 
-                        // ISBN
-                        if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_10") {
-                            libro.isbn = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
-                            libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
-                            isb = libro.isbn;
-                        }
-                        else if(data.items[0].volumeInfo.industryIdentifiers[0].type == "ISBN_13") {
-                            libro.isbn13 = data.items[0].volumeInfo.industryIdentifiers[0].identifier;
-                            libro.isbn = data.items[0].volumeInfo.industryIdentifiers[1].identifier;
-                            isb = libro.isbn;
+                        // Recomiendo este libro a usuarios aleatorios
+                        var users = await User.aggregate([{ $sample: {size: 5} }]);
+                        var user = req.session.username != undefined ? req.session.username : req.body.username;
+                        
+                        if(user != undefined) {
+                            var ses = await User.findOne({ username: user }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
+                            for(let i in users) {
+                                var u = await User.findById(users[i]._id);
+
+                                if(u.username != "admin" && u.username != ses.username) {
+                                    await u.recomended_books.push(libro._id);
+                                    await u.save();
+                                } 
+                            }
                         }
                         else {
-                            libro.isbn = is;
-                            isb = libro.isbn;
-                        }
-
-                        // Título
-                        libro.title = req.body.title.length > 0 ? req.body.title : data.items[0].volumeInfo.title;
+                            for(let i in users) {
+                                var u = await User.findById(users[i]._id);
                                 
-                        // Autores
-                        libro.authors = [];
-                        if(req.body.chips_author.length > 0) libro.authors = req.body.chips_author;
-                        else for(let i in data.items[0].volumeInfo.authors) await libro.authors.push(data.items[0].volumeInfo.authors[i]);
-                                
-                        // Número de páginas
-                        libro.numpages = req.body.numpages != undefined && req.body.numpages != null && req.body.numpages.length > 0 ? req.body.numpages : (data.items[0].volumeInfo.pageCount != undefined ? data.items[0].volumeInfo.pageCount : 0);
-
-                        // Fecha de publicación
-                        libro.publicationdate = req.body.publicationdate.length == 0 ? data.items[0].volumeInfo.publishedDate : req.body.publicationdate;
-
-                        // URL
-                        libro.url = req.body.url.length > 0 ? req.body.url : data.items[0].volumeInfo.previewLink;
-
-                        // Editorial
-                        libro.publisher = req.body.publisher.length > 0 ? req.body.publisher : data.items[0].volumeInfo.publisher;
-
-                        // Idioma
-                        libro.language = req.body.language.length > 0 ? req.body.language : data.items[0].volumeInfo.language.toUpperCase();
-
-                        // Si se han introducido géneros, se insertan 
-                        libro.genres = [];                      
-                        if(req.body.chips.length > 0) {
-                            for(let i in req.body.chips) {
-                                var nombre = filtrarGenero(req.body.chips[i]);
-                                const genero = await Genre.find({name: nombre});
-                                if(genero.length > 0) {
-                                    // Obtengo id y lo inserto
-                                    await libro.genres.push(genero[0]._id);
-                                }
-                                else {
-                                    // Creo el género
-                                    var g = new Genre();
-                                    g.name = nombre;
-                
-                                    await g.save();
-                
-                                    // Obtengo el id y lo inserto
-                                    const genero = await Genre.find({name: nombre});
-                                    if(genero.length > 0) await libro.genres.push(genero[0]._id);
-                                }    
-                            }   
+                                if(u.username != "admin") {
+                                    await u.recomended_books.push(libro._id);
+                                    await u.save();
+                                } 
+                            }
                         }
 
-                        // Si se ha subido una imagen, la almaceno
-                        libro.image = req.body.image;
-                                
-                        // Guardo el libro
-                        await libro.save();
-                    }
-
-                    // Recomiendo este libro a usuarios aleatorios
-                    var users = await User.aggregate([{ $sample: {size: 5} }]);
-                    var user = req.session.username != undefined ? req.session.username : req.body.username;
-                    
-                    if(user != undefined) {
-                        var ses = await User.findOne({ username: user }); // No se le debe recomendar este libro al usuario actual, ya que se supone que está interesado
-                        for(let i in users) {
-                            var u = await User.findById(users[i]._id);
-
-                            if(u.username != "admin" && u.username != ses.username) {
-                                await u.recomended_books.push(libro._id);
-                                await u.save();
-                            } 
-                        }
-                    }
-                    else {
-                        for(let i in users) {
-                            var u = await User.findById(users[i]._id);
-                            
-                            if(u.username != "admin") {
-                                await u.recomended_books.push(libro._id);
-                                await u.save();
-                            } 
-                        }
-                    }
-
-                    res.json({ isbn: data.totalItems == 0 ? is : isb, msg: '' });
-                })
-                .catch(err => console.log(err));
+                        res.json({ isbn: data.totalItems == 0 ? is : isb, msg: '' });
+                    })
+                    .catch(err => console.log(err));
+            }
+            else res.json({ msg: 'Introduzca los géneros del libro' });
         }
         else res.json({ msg: 'El libro con ese ISBN se encuentra ya registrado' });
     }
@@ -298,15 +546,6 @@ router.get('/users/signout', async (req,res) => {
 router.get('/verifysession', async (req,res) => {
     if(req.session.username === undefined || req.session.username.length == 0) res.json({msg: 'NO'});
     else res.json({msg: 'SI'});
-});
-
-router.get('/title', async (req,res) => {
-    var data = [];
-
-    const books = await Book.find();
-    for(let i in books) data.push({ label: books[i].title + " - " + books[i].isbn });
-
-    res.json({ data: data});
 });
 
 router.get('/user', async (req,res) => {
@@ -484,7 +723,16 @@ router.post('/users/signup', async (req,res) => {
                                 }   
                                 
                                 await usuario.save();
-                                
+
+                                // Una vez registrado el usuario, calculamos las similitudes entre este usuario y el resto
+                                var users_filter = await User.find({ _id: { $ne: usuario._id }, username: { $ne: "admin" } });
+                                obtenerSimilitudes(users_filter, usuario._id);
+
+                                // Recomendación por géneros
+                                if(req.body.chips.length > 0) {
+                                    recomendacionPorGeneros(usuario);
+                                }
+
                                 res.json({ msg: ''});   
                             }
                             else res.json({ msg: 'Las contraseñas no son iguales'});
@@ -571,6 +819,21 @@ router.post('/valoration/signup', async (req,res) => {
                 valoration.user = user._id;
 
                 await valoration.save();
+
+                // Una vez guardada la valoración, recalculamos las similitudes entre este usuario y el resto
+                var users_filter = await User.find({ _id: { $ne: user._id }, username: { $ne: "admin" } });
+                obtenerSimilitudes(users_filter, user._id);
+
+                // También, actualizamos la polaridad del librp
+                var cl_json = await Classifier.findOne({});
+                var cl = bayes.fromJson(cl_json.json);
+
+                var sentimiento = cl.categorize(valoration.description);
+
+                if(sentimiento == 'positive') book.polarity++;
+                else if(sentimiento == 'negative') book.polarity--;
+
+                await book.save();
                                                     
                 res.json({ msg: ''}); 
             }
@@ -968,7 +1231,7 @@ router.get('/genrelist', async (req,res) => {
 });
 
 router.post('/rememberpassword', async (req,res) => {
-    var user = await User.findOne({ username: req.body.username });
+    var user = await User.findOne({ $or : [ {username: req.body.username}, {email: req.body.username} ] });
     if(user == null) res.json({ msg: 'El nombre de usuario introducido no se ha encontrado'});
     else {
         // Genero contraseña temporal
@@ -996,7 +1259,7 @@ router.post('/rememberpassword', async (req,res) => {
             if(err) res.json({ msg: 'Hubo un problema al enviar el mensaje, si persiste este problema, contacte con el administrador'});
             else {
                 // Cambio la contraseña del usuario
-                user.password = crypto.createHmac('sha1', req.body.username).update(temp_pass).digest('hex');
+                user.password = crypto.createHmac('sha1', user.username).update(temp_pass).digest('hex');
                 await user.save();
 
                 res.json({ msg: '', email: user.email});
@@ -1206,6 +1469,129 @@ router.post('/removenews', async (req,res) => {
 
         res.json({ msg: '', array: array.reverse(), countSuggestions: numSuggestions });
     }
+});
+
+router.post('/dorecommendation', async (req,res) => {
+    // Obtengo id del usuario
+    var usuario = req.session.username != undefined ? req.session.username : req.body.username;
+    var user = await User.findOne({ username: usuario });
+
+    // Tipo de recomendación
+    switch(req.body.option) {
+        case 1: // Filtrado colaborativo
+            // Obtengo y ordeno las similitudes
+            var similitudes = await Similarity.find({ $or: [ { user1: user._id }, { user2: user._id } ] });
+
+            // Ordenar similitudes
+            similitudes.sort(function (a,b) { 
+                return b.sim - a.sim; 
+            });
+
+            // Obtenemos los k vecinos más similares (k=3)
+            var vecinos = similitudes.slice(0,3);
+
+            // Obtengo títulos recomendados
+            var libros = await obtenerLibrosRecomendados(user._id, vecinos);
+
+            devolverRecomendacion(user, libros, res);
+            
+            break;
+        case 2: // Recomendación por géneros
+            recomendacionPorGeneros(user, res);
+
+            break;
+        case 3: // Análisis de sentimientos
+            // Obtengo libros recomendados
+            var libros = [];
+
+            client.search('q=*:*&sort=polarity desc', async function(err, result) {
+                if(err) {
+                    console.log(err);
+                    res.json({ msg: 'Problema al hacer la recomendación' });
+                    return;
+                }
+
+                for(let i in result.response.docs) {
+                    libros.push(result.response.docs[i].id);
+                }
+
+                // Devuelvo los libros recomendados del usuario
+                var array = [];
+
+                devolverRecomendacion(user, libros, res);
+            });
+
+            break;
+        default: // Análisis de sentimientos teniendo en cuenta las preferencias del usuario
+            // Obtengo libros recomendados
+            var libros = [];
+
+            // Preparo consulta
+            var consulta = 'q=';
+            for(let i in user.favouritesgenres) {
+                let genre = await Genre.findOne({ _id: user.favouritesgenres[i]._id });
+                if(genre != null) consulta += ('genres:\"' + genre.name + '\" OR '); 
+            }
+
+            consulta = consulta.substring(0, consulta.length - 4); // Quito el último OR
+
+            client.search(consulta + '&sort=polarity desc', async function(err, result) {
+                if(err) {
+                    console.log(err);
+                    res.json({ msg: 'Problema al hacer la recomendación' });
+                    return;
+                }
+
+                for(let i in result.response.docs) {
+                    libros.push(result.response.docs[i].id);
+                }
+
+                // Devuelvo los libros recomendados del usuario
+                var array = [];
+
+                devolverRecomendacion(user, libros, res);
+            });
+
+            break;
+    }
+});
+
+router.post('/dosearch', async (req,res) => {
+    var search_text = req.body.text;
+
+    if(search_text.length > 0) {
+        var libros = [];
+
+        var consulta = 'q=isbn:\"' + search_text + '\" OR isbn13:\"'  + search_text 
+                        + '\" OR title:\"' + search_text + '\" OR authors:\"' + search_text 
+                        + '\" OR publisher:\"' + search_text + '\" OR genres:\"' + search_text
+                        + '\" OR language:\"' + search_text + '\"';
+
+        client.search(consulta, async function(err, result) {
+            if(err) {
+                console.log(err);
+                var books = await Book.find({}, { title: 1, isbn: 1 });
+
+                // Como máximo devuelvo 10 libros
+                let cont = 0;
+                for(let i=0;i<books.length;i++) {
+                    if(books[i].title.toLowerCase().includes(search_text.toLowerCase())) {
+                        libros.push({ label: books[i].title, value: books[i].isbn });
+                        cont++;
+                        if(cont == 10) break;
+                    }
+                }
+            }
+            else {
+                for(let i in result.response.docs) {
+                    libros.push({ label: result.response.docs[i].title, value: result.response.docs[i].isbn });
+                }
+            }
+
+            res.json({ msg: '', libros: libros });
+        });
+    }
+    else res.json({ msg: 'No se ha introducido un texto de búsqueda'});
 });
 
 module.exports = router;

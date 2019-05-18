@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { AutoComplete, MuiThemeProvider } from 'material-ui';
 
 export default class Menu extends Component {
     constructor(props){
         super(props);
         this.state = { username: '', name: '', options: [], value: '' };
         this.closeSession = this.closeSession.bind(this);
+        this.doSearch = this.doSearch.bind(this);
     }
 
     componentWillMount() {
@@ -21,20 +21,6 @@ export default class Menu extends Component {
                 if(data.msg.length == 0) this.setState({username: data.username, name: data.name });
             })
             .catch(err => console.log(err));
-
-        fetch('/title', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                this.setState({
-                    options: data.data
-                });
-            })
     }
 
     closeSession() {
@@ -49,6 +35,27 @@ export default class Menu extends Component {
             .then(data => { 
                 location.href = "/index.html";
                 this.forceUpdate();
+            })
+            .catch(err => console.log(err));
+    }
+
+    doSearch() {
+        fetch('/dosearch',{
+            method: 'POST',
+            body: JSON.stringify({ text: this.state.value }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => { 
+                console.log(data);
+                if(data.msg.length == 0) {
+                    this.setState({ options: data.libros, value: '' });
+                    if(data.libros.length == 0) M.toast({ 'html': 'No se han encontrado resultados'}); 
+                } 
+                else M.toast({ 'html': data.msg });
             })
             .catch(err => console.log(err));
     }
@@ -84,15 +91,18 @@ export default class Menu extends Component {
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">
-                                        <MuiThemeProvider>
-                                            <AutoComplete hintText="Buscar libro..." dataSource={this.state.options} dataSourceConfig={{ text: 'label', value: 'label' }}
-                                                          onUpdateInput={(value) => this.setState({ value: value.split(" - ")[1] })} 
-                                                          filter={(searchText, key) => {return searchText.toUpperCase() !== '' && key.toUpperCase().indexOf(searchText.toUpperCase()) !== -1;}}  />
-                                        </MuiThemeProvider>
+                                        <input style={{ width: '80%', margin: '0'}} placeholder="Buscar libro..." type="text" value={this.state.value} onChange={(e) => this.setState({ value: e.target.value, options: [] })} />
+                                    </div>
+                                    <div className="center collection" style={{ margin: '0 auto', width: '80%'}}>
+                                        {
+                                            this.state.options.map(item => { 
+                                                return <a href={"/book_details.html?isbn=" + item.value} key={item.value} className="collection-item">{item.label}</a>;
+                                            })
+                                        }
                                     </div>
                                     <div className="center">
-                                        <button className="btn" onClick={() => { if(this.state.value.match("[0-9]+")) location.href = "/book_details.html?isbn=" + this.state.value }}><i className="material-icons">search</i></button> 
-                                    </div>
+                                        <button className="btn" onClick={() => this.doSearch()}><i className="material-icons">search</i></button> 
+                                    </div>  
                                 </li>
                                 <li><div className="divider"></div></li>
                             </ul>
@@ -117,15 +127,18 @@ export default class Menu extends Component {
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">
-                                        <MuiThemeProvider>
-                                            <AutoComplete hintText="Buscar libro..." dataSource={this.state.options} dataSourceConfig={{ text: 'label', value: 'label' }}
-                                                          onUpdateInput={(value) => this.setState({ value: value.split(" - ")[1] })} 
-                                                          filter={(searchText, key) => {return searchText.toUpperCase() !== '' && key.toUpperCase().indexOf(searchText.toUpperCase()) !== -1;}}  />
-                                        </MuiThemeProvider>
+                                        <input style={{ width: '80%', margin: '0'}} placeholder="Buscar libro..." type="text" value={this.state.value} onChange={(e) => this.setState({ value: e.target.value, options: [] })} />
+                                    </div>
+                                    <div className="center collection" style={{ margin: '0 auto', width: '80%'}}>
+                                        {
+                                            this.state.options.map(item => { 
+                                                return <a href={"/book_details.html?isbn=" + item.value} key={item.value} className="collection-item">{item.label}</a>;
+                                            })
+                                        }
                                     </div>
                                     <div className="center">
-                                        <button className="btn" onClick={() => { if(this.state.value.match("[0-9]+")) location.href = "/book_details.html?isbn=" + this.state.value }}><i className="material-icons">search</i></button> 
-                                    </div>
+                                        <button className="btn" onClick={() => this.doSearch()}><i className="material-icons">search</i></button> 
+                                    </div>  
                                 </li>
                                 <li><div className="divider"></div></li>
                                 <li><a href="my_valorations.html"><i className="material-icons">book</i>Mis Valoraciones</a></li>
@@ -154,14 +167,17 @@ export default class Menu extends Component {
                                 <li><div className="divider"></div></li>
                                 <li>
                                     <div className="center">
-                                        <MuiThemeProvider>
-                                            <AutoComplete hintText="Buscar libro..." dataSource={this.state.options} dataSourceConfig={{ text: 'label', value: 'label' }}
-                                                          onUpdateInput={(value) => this.setState({ value: value.split(" - ")[1] })} 
-                                                          filter={(searchText, key) => {return searchText.toUpperCase() !== '' && key.toUpperCase().indexOf(searchText.toUpperCase()) !== -1;}}  />
-                                        </MuiThemeProvider>
+                                        <input style={{ width: '80%', margin: '0'}} placeholder="Buscar libro..." type="text" value={this.state.value} onChange={(e) => this.setState({ value: e.target.value, options: [] })} />
+                                    </div>
+                                    <div className="center collection" style={{ margin: '0 auto', width: '80%'}}>
+                                        {
+                                            this.state.options.map(item => { 
+                                                return <a href={"/book_details.html?isbn=" + item.value} key={item.value} className="collection-item">{item.label}</a>;
+                                            })
+                                        }
                                     </div>
                                     <div className="center">
-                                        <button className="btn" onClick={() => { if(this.state.value.match("[0-9]+")) location.href = "/book_details.html?isbn=" + this.state.value }}><i className="material-icons">search</i></button> 
+                                        <button className="btn" onClick={() => this.doSearch()}><i className="material-icons">search</i></button> 
                                     </div>   
                                 </li>
                                 <li><div className="divider"></div></li>

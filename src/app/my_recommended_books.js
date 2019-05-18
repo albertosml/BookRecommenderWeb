@@ -14,10 +14,12 @@ class RecommendedBooks extends Component {
             username: '',
             recBooks: [],
             recBooks_mostrados: [],
-            activePage: 1
+            activePage: 1,
+            option: 1
         };
 
         this.handlePageChange = this.handlePageChange.bind(this);
+        this.requestRecommendation = this.requestRecommendation.bind(this);
     }
 
     componentWillMount() {
@@ -115,9 +117,28 @@ class RecommendedBooks extends Component {
 
     requestRecommendation(e) {
         e.preventDefault();
-        var value = document.querySelectorAll(".preference");
-        for(let i in value) if(value[i].checked);
-        M.toast({'html': 'Recomendación solicitada'});
+        M.toast({'html': 'Realizando recomendación, espere un instante'});
+
+        fetch('/dorecommendation',{
+            method: 'POST',
+            body: JSON.stringify({ option: this.state.option }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.msg.length == 0) {
+                    this.setState({ recBooks: data.array });
+                    this.setState({ recBooks_mostrados: this.state.recBooks.slice(0,2) });
+                    this.setState({ activePage: 1 });
+                    this.setState({ option: 1 });
+                    M.toast({'html': 'Recomendación realizada, se han obtenido ' + data.cont + ' libro/libros nuevos'});
+                }
+                else M.toast({'html': data.msg });
+            })
+            .catch(err => console.log(err));
     }
 
     render() {
@@ -169,27 +190,34 @@ class RecommendedBooks extends Component {
                 
                 <div className="row">
                     <div className="col s8 offset-s2 card light-green lighten-3">
-                        <p className="center-align">Seleccione el criterio o los criterios en los que quiere que basemos sus recomendaciones</p>
+                        <p className="center-align">Seleccione el criterio en el que quiere que basemos sus recomendaciones</p>
                         <div className="row">
-                            <form onSubmit={this.requestRecommendation}>
-                                <p className="center-align">
+                            <form className="center-align" onSubmit={this.requestRecommendation}>
+                                <p>
                                     <label>
-                                        <input type="checkbox" className="preference" value="géneros" />
-                                        <span>Géneros</span>
-                                    </label>
-                                </p>
-
-                                <p className="center-align">
-                                    <label>
-                                        <input type="checkbox" className="preference" value="valoraciones" />
+                                        <input type="radio" value="1" checked={this.state.option === 1} onChange={() => this.setState({ option: 1 })} />
                                         <span>Valoraciones</span>
                                     </label>
                                 </p>
 
-                                <p className="center-align">
+                                <p>
                                     <label>
-                                        <input type="checkbox" className="preference" value="comentarios" />
-                                        <span>Comentarios</span>
+                                        <input type="radio" value="2" checked={this.state.option === 2} onChange={() => this.setState({ option: 2 })} />
+                                        <span>Géneros</span>
+                                    </label>
+                                </p>
+
+                                <p>
+                                    <label>
+                                        <input type="radio" value="3" checked={this.state.option === 3} onChange={() => this.setState({ option: 3 })} />
+                                        <span>Opiniones</span>
+                                    </label>
+                                </p>
+
+                                <p>
+                                    <label>
+                                        <input type="radio" value="4" checked={this.state.option === 4} onChange={() => this.setState({ option: 4 })} />
+                                        <span>Opiniones de géneros favoritos</span>
                                     </label>
                                 </p>
                                     

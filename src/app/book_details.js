@@ -14,7 +14,6 @@ class BookDetails extends Component {
         super();
         this.state = {
             rating: 0,
-            description: '',
             isbn: '',
             isbn13: '',
             isbn10: '',

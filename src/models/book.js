@@ -15,7 +15,8 @@ const BookSchema = new Schema({
     genres: [
         { genre: { type:Schema.Types.ObjectId, ref:'Genres' } }
     ],
-    image: { type:String }
+    image: { type:String },
+    polarity: { type:Number, default: 0}
 });
     
 module.exports = mongoose.model('Book', BookSchema);

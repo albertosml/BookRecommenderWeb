@@ -4,8 +4,7 @@ import { render } from 'react-dom';
 import Menu from './Menu';
 import Footer from './Footer';
 
-import Chips, { Chip } from 'react-chips';
-import { ImageGradient } from 'material-ui/svg-icons';
+import Chips from 'react-chips';
 
 class Perfil extends Component {
     constructor(props) {
