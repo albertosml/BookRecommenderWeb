@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const fetch = require("node-fetch");
 const nodemailer = require("nodemailer");
 const bayes = require('bayes');
+const schedule = require('node-schedule');
 const SolrNode = require('solr-node');
 const client = new SolrNode({
     host: '35.180.69.250',
@@ -21,6 +22,52 @@ const Valoration = require('../models/valoration');
 const Suggestion = require('../models/suggestion');
 const Similarity = require('../models/similarity');
 const Classifier = require('../models/classifier');
+
+// Cron para actualizar el índice a las 3 de la mañana de cada día
+var cron = schedule.scheduleJob({ hour: 3, minute: 0 }, async function() {
+    let books = await Book.find();
+
+    // Elimino todos los campos
+    for(let i=0; i<books.length; i++) {
+        client.delete('id:' + books[i]._id, function(err, result) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log('Response:', result);
+        });
+    }
+
+    // Indexo el contenido
+    var genres;
+    for(let i=0; i<books.length; i++) {
+        genres = [];
+        for(let j=0;j<books[i].genres.length;j++) {
+            var genre = await Genre.findOne({ _id: books[i].genres[j]._id });
+            genres.push(genre.name);
+        }
+                
+        var data = {
+           'id': books[i]._id.toString(),
+           'isbn': books[i].isbn,
+           'isbn13': books[i].isbn13 != undefined ? books[i].isbn13 : '',
+           'title': books[i].title,
+           'authors': books[i].authors,
+           'publisher': books[i].publisher != undefined ? books[i].publisher: '',
+           'language': books[i].language != undefined ? books[i].language: '',
+           'genres': genres,
+           'polarity': books[i].polarity 
+        };
+
+        client.update(data, function(err, result) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log('Response:', result);  
+        });
+    }
+});
 
 // Functions
 function filtrarAcentos(nombre) {
@@ -256,13 +303,13 @@ async function recomendacionPorGeneros(user, res = null) {
     var libros = [];
 
     // Preparo consulta
-    var consulta = 'q=';
+    var consulta = 'q=genres: ( ';
     for(let i in user.favouritesgenres) {
         let genre = await Genre.findOne({ _id: user.favouritesgenres[i]._id });
-        if(genre != null) consulta += ('genres:\"' + genre.name + '\" OR '); 
+        if(genre != null) consulta += ('\"' + genre.name + '\" '); 
     }
 
-    consulta = consulta.substring(0, consulta.length - 4); // Quito el último OR
+    consulta += ')&rows=30';
 
     client.search(consulta, async function(err, result) {
         if(err) {
@@ -1508,7 +1555,7 @@ router.post('/dorecommendation', async (req,res) => {
             // Obtengo libros recomendados
             var libros = [];
 
-            client.search('q=*:*&sort=polarity desc', async function(err, result) {
+            client.search('q=*:*&sort=polarity desc&rows=30', async function(err, result) {
                 if(err) {
                     console.log(err);
                     res.json({ msg: 'Problema al hacer la recomendación' });
@@ -1531,15 +1578,15 @@ router.post('/dorecommendation', async (req,res) => {
             var libros = [];
 
             // Preparo consulta
-            var consulta = 'q=';
+            var consulta = 'q=genres: ( ';
             for(let i in user.favouritesgenres) {
                 let genre = await Genre.findOne({ _id: user.favouritesgenres[i]._id });
-                if(genre != null) consulta += ('genres:\"' + genre.name + '\" OR '); 
+                if(genre != null) consulta += ('\"' + genre.name + '\" '); 
             }
+        
+            consulta += ')&sort=polarity desc&rows=30';
 
-            consulta = consulta.substring(0, consulta.length - 4); // Quito el último OR
-
-            client.search(consulta + '&sort=polarity desc', async function(err, result) {
+            client.search(consulta, async function(err, result) {
                 if(err) {
                     console.log(err);
                     res.json({ msg: 'Problema al hacer la recomendación' });
@@ -1566,15 +1613,15 @@ router.post('/dosearch', async (req,res) => {
     if(search_text.length > 0) {
         var libros = [];
 
-        var consulta = 'q=isbn:\"' + search_text + '\" OR isbn13:\"'  + search_text 
-                        + '\" OR title:\"' + search_text + '\" OR authors:\"' + search_text 
-                        + '\" OR publisher:\"' + search_text + '\" OR genres:\"' + search_text
-                        + '\" OR language:\"' + search_text + '\"';
+        var consulta = 'q=isbn:(' + search_text + ') OR isbn13:('  + search_text 
+                        + ') OR title:(' + search_text + ') OR authors:(' + search_text 
+                        + ') OR publisher:(' + search_text + ') OR genres:(' + search_text
+                        + ') OR language:(' + search_text + ')';
         
         // Filtro los acentos de la consulta, debido a un problema con la petición
         consulta = filtrarAcentos(consulta);
 
-        client.search(consulta, async function(err, result) {
+        client.search(consulta + "&sort=score desc", async function(err, result) {
             if(err) {
                 console.log(err);
                 var books = await Book.find({}, { title: 1, isbn: 1 });

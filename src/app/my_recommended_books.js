@@ -196,28 +196,28 @@ class RecommendedBooks extends Component {
                                 <p>
                                     <label>
                                         <input type="radio" value="1" checked={this.state.option === 1} onChange={() => this.setState({ option: 1 })} />
-                                        <span>Valoraciones</span>
+                                        <span>Basada en valoraciones</span>
                                     </label>
                                 </p>
 
                                 <p>
                                     <label>
                                         <input type="radio" value="2" checked={this.state.option === 2} onChange={() => this.setState({ option: 2 })} />
-                                        <span>Géneros</span>
+                                        <span>Basada en géneros favoritos</span>
                                     </label>
                                 </p>
 
                                 <p>
                                     <label>
                                         <input type="radio" value="3" checked={this.state.option === 3} onChange={() => this.setState({ option: 3 })} />
-                                        <span>Opiniones</span>
+                                        <span>Basada en opiniones</span>
                                     </label>
                                 </p>
 
                                 <p>
                                     <label>
                                         <input type="radio" value="4" checked={this.state.option === 4} onChange={() => this.setState({ option: 4 })} />
-                                        <span>Opiniones de géneros favoritos</span>
+                                        <span>Basada en opiniones y géneros favoritos</span>
                                     </label>
                                 </p>
                                     
