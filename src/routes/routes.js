@@ -23,8 +23,8 @@ const Suggestion = require('../models/suggestion');
 const Similarity = require('../models/similarity');
 const Classifier = require('../models/classifier');
 
-// Cron para actualizar el índice a las 3 de la mañana de cada día
-var cron = schedule.scheduleJob({ hour: 3, minute: 0 }, async function() {
+// Se actualiza el índice cada vez que se enciende el servidor
+async function actualizarIndice() {
     let books = await Book.find();
 
     // Elimino todos los campos
@@ -67,7 +67,9 @@ var cron = schedule.scheduleJob({ hour: 3, minute: 0 }, async function() {
             console.log('Response:', result);  
         });
     }
-});
+}
+
+actualizarIndice();
 
 // Functions
 function filtrarAcentos(nombre) {

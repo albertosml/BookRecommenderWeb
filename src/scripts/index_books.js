@@ -1,10 +1,10 @@
 var SolrNode = require('solr-node');
 var fetch = require('node-fetch');
 
-const { mongoose } = require('./database');
+const { mongoose } = require('../database');
 
-const Book = require('./models/book');
-const Genre = require('./models/genre');
+const Book = require('../models/book');
+const Genre = require('../models/genre');
 
 var ip = '35.180.69.250';
 

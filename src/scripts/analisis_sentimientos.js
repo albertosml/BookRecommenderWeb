@@ -7,11 +7,11 @@ const csv = require('csv-parser');
 const fs = require('fs');
 
 // Db connection
-const { mongoose } = require('./database');
+const { mongoose } = require('../database');
 
-const Valoration = require('./models/valoration');
-const Classifier = require('./models/classifier');
-const Book = require('./models/book');
+const Valoration = require('../models/valoration');
+const Classifier = require('../models/classifier');
+const Book = require('../models/book');
 
 async function obtainValorations() {
     return await Valoration.find();
