@@ -1613,15 +1613,15 @@ router.post('/dosearch', async (req,res) => {
     if(search_text.length > 0) {
         var libros = [];
 
+        // Filtro los acentos de la consulta, debido a un problema con la petición
+        search_text = filtrarAcentos(search_text);
+
         var consulta = 'q=isbn:(' + search_text + ') OR isbn13:('  + search_text 
                         + ') OR title:(' + search_text + ') OR authors:(' + search_text 
                         + ') OR publisher:(' + search_text + ') OR genres:(' + search_text
                         + ') OR language:(' + search_text + ')';
-        
-        // Filtro los acentos de la consulta, debido a un problema con la petición
-        consulta = filtrarAcentos(consulta);
 
-        client.search(consulta + "&sort=score desc", async function(err, result) {
+        client.search(consulta, async function(err, result) {
             if(err) {
                 console.log(err);
                 var books = await Book.find({}, { title: 1, isbn: 1 });
