@@ -720,7 +720,7 @@ router.post('/users/signin', async (req,res) => {
                     req.session.cookie.expires = new Date(Date.now() + 3600000);
                     req.session.cookie.maxAge = 3600000;
                     
-                    res.json({msg: ''});
+                    res.json({msg: '', username: u.username});
                 }
                 else res.json({msg: 'Nombre de usuario/Email y/o contraseña incorrectos'});
             }
@@ -1307,6 +1307,8 @@ router.post('/rememberpassword', async (req,res) => {
         };
 
         await transporter.sendMail(mailOptions, async (err,data) => {
+	    console.log(err);
+	    console.log(data);
             if(err) res.json({ msg: 'Hubo un problema al enviar el mensaje, si persiste este problema, contacte con el administrador'});
             else {
                 // Cambio la contraseña del usuario
@@ -1316,6 +1318,7 @@ router.post('/rememberpassword', async (req,res) => {
                 res.json({ msg: '', email: user.email});
             }
         });
+
     }
 });
 
