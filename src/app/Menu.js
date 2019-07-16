@@ -52,7 +52,7 @@ export default class Menu extends Component {
             .then(data => { 
                 console.log(data);
                 if(data.msg.length == 0) {
-                    this.setState({ options: data.libros, value: '' });
+                    this.setState({ options: data.libros });
                     if(data.libros.length == 0) M.toast({ 'html': 'No se han encontrado resultados'}); 
                 } 
                 else M.toast({ 'html': data.msg });

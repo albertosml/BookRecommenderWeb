@@ -17,8 +17,9 @@ class NewSession extends Component {
     }
 
     handleChange(e) {
+	// Remove spaces from username/email
         const { name, value } = e.target;
-        this.setState({ [name] : value });
+        this.setState({ [name] : value.trim() });
     }
 
     componentWillMount() {
