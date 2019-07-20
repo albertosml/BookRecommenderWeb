@@ -1,5 +1,5 @@
 {
-  "name": "BookRecommender",
+  "name": "BookRecommenderWeb",
   "version": "1.0.0",
   "description": "Página web para recomendar libros que corresponde al TFG",
   "main": "index.js",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/albertosml/BookRecommender.git"
+    "url": "git+https://github.com/albertosml/BookRecommenderWeb.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/albertosml/BookRecommender/issues"
+    "url": "https://github.com/albertosml/BookRecommenderWeb/issues"
   },
-  "homepage": "https://github.com/albertosml/BookRecommender#readme",
+  "homepage": "https://github.com/albertosml/BookRecommenderWeb#readme",
   "dependencies": {
     "bayes": "0.0.7",
     "crypto": "^1.0.1",
